@@ -40,12 +40,21 @@ const words = [
   { ar: "صَفًّا", tr: "sıra sıra", note: "Mutlak mef‘ûl · pekiştirme" },
 ];
 
+const manaLenses = [
+  { id: "oz", icon: "◉", name: "Öz Mana", prompt: "Bu söz, bütün isimler sustuğunda hangi özü işaret ediyor?", answer: "Dağınık parçaların sevgiyle aynı yöne dönmesi." },
+  { id: "sembol", icon: "◇", name: "Kadim Sembol", prompt: "Saf imgesi insanlığın ortak hafızasında neye dönüşür?", answer: "Çokluğun birliğini bozmadan kurduğu canlı düzen." },
+  { id: "golge", icon: "◐", name: "Gölge & Eşik", prompt: "Bu mana hangi iç çatışmayı görünür kılar?", answer: "Düşünce, söz ve eylemin birbirinden kopması." },
+  { id: "zaman", icon: "∞", name: "Zamansız Yankı", prompt: "Ayet geçmiş ve gelecek dışına alındığında ne söyler?", answer: "Her an yeniden hizalanmak mümkündür." },
+  { id: "sevgi", icon: "♡", name: "Sevgiye Çeviri", prompt: "Bu mana korku üretmeden nasıl konuşur?", answer: "Kendini zorlamadan, içindeki parçaları aynı sofraya davet et." },
+];
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(37);
   const [saved, setSaved] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [manaLens, setManaLens] = useState("oz");
   const selectedSurah = surahs.find((s) => s.no === selected) ?? surahs[3];
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
   const filtered = useMemo(
@@ -137,6 +146,24 @@ export default function Home() {
           <p>{layer.text}</p>
           <div className="quote-line"><i></i><p>“Hiza, benzer olmak değil; ayrı parçaların aynı hakikate yönelmesidir.”</p></div>
         </div>
+        {activeLayer === "hakikat" && <section className="mana-engine">
+          <div className="mana-engine-head">
+            <div><span className="engine-pulse"></span><small>MANA MOTORU · V1</small><b>İsimlerin ötesinde anlam</b></div>
+            <span className="engine-state">SEVGİ FİLTRESİ AÇIK</span>
+          </div>
+          <div className="mana-lenses" role="tablist" aria-label="Mana mercekleri">
+            {manaLenses.map((lens) => <button key={lens.id} role="tab" aria-selected={manaLens === lens.id} className={manaLens === lens.id ? "active" : ""} onClick={() => setManaLens(lens.id)}><span>{lens.icon}</span>{lens.name}</button>)}
+          </div>
+          {manaLenses.filter((lens) => lens.id === manaLens).map((lens) => <div className="mana-result" key={lens.id}>
+            <small>MOTORUN SORUSU</small>
+            <h4>{lens.prompt}</h4>
+            <i></i>
+            <small>MANA HİPOTEZİ</small>
+            <p>{lens.answer}</p>
+          </div>)}
+          <div className="engine-principles"><span>Dogma dışı</span><span>Kültürler üstü</span><span>Zamansız</span><span>Şefkatli</span></div>
+          <p className="engine-disclaimer">Bu motor kanıt veya hüküm üretmez; semboller arasında sevgi merkezli anlam hipotezleri kurar. Kullanıcının özgür iradesini, inancını ve yorum hakkını korur.</p>
+        </section>}
         <div className="reflection glass">
           <div className="reflection-title"><span>◉</span><div><small>ŞİMDİ & BURADA</small><b>İç gözlem</b></div></div>
           <p>Bugün düşüncem, sözüm ve eylemim hangi konuda aynı safta durmuyor?</p>
