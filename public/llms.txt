@@ -1,0 +1,14 @@
+# Âyet Atlası
+
+Âyet Atlası, Arapça mushaf metnini belgeye dayalı dil, bağlam ve açıkça etiketlenmiş sembolik tefekkür katmanlarıyla sunan bir Kur'an araştırma sitesidir.
+
+## İçerik ilkeleri
+
+- Arapça metin değişmez kaynak katmanıdır.
+- Dilsel veri, belge okuması ve sembolik hipotez birbirinden ayrılır.
+- Üretilmemiş âyet içeriği tamamlanmış gibi gösterilmez.
+- Sağlık, bilim ve ontoloji iddiaları kesin bilgi olarak sunulmaz.
+- Alıntı ve türetim kaynağı görünür tutulur.
+
+Canonical: https://ayetatlas.org/
+Health: https://ayetatlas.org/api/health

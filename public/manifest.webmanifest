@@ -1,0 +1,12 @@
+{
+  "name": "Âyet Atlası",
+  "short_name": "Âyet Atlası",
+  "description": "Belgeye dayalı katmanlı Kur’an araştırması",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf8f1",
+  "theme_color": "#286d59",
+  "lang": "tr",
+  "dir": "ltr",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

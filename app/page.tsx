@@ -3,11 +3,14 @@
 import { FormEvent, useMemo, useState } from "react";
 import { surahs } from "./surahs";
 import { aliImranBatch } from "./content/ali-imran-batch";
+import { aliImran21to40 } from "./content/ali-imran-21-40";
 import { maideBatch } from "./content/maide-batch";
+import { maide6to20 } from "./content/maide-6-20";
 import { nisaBatch } from "./content/nisa-batch";
+import { nisa6to20 } from "./content/nisa-6-20";
 import type { VerseStudy } from "./content/types";
 
-const verseStudies: Record<string, VerseStudy> = { ...aliImranBatch, ...nisaBatch, ...maideBatch };
+const verseStudies: Record<string, VerseStudy> = { ...aliImranBatch, ...aliImran21to40, ...nisaBatch, ...nisa6to20, ...maideBatch, ...maide6to20 };
 
 const layers = [
   {

@@ -42,6 +42,15 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const requestUrl = new URL(request.url);
+  const origin = request.headers.get("Origin");
+  if (origin && origin !== requestUrl.origin) {
+    return Response.json({ error: "Geçersiz istek kaynağı." }, { status: 403 });
+  }
+  const contentLength = Number(request.headers.get("Content-Length") ?? 0);
+  if (contentLength > MAX_FILE_SIZE + 1024 * 1024) {
+    return Response.json({ error: "İstek boyutu sınırı aşıyor." }, { status: 413 });
+  }
   await ensureSchema();
   const form = await request.formData();
   const file = form.get("file");
