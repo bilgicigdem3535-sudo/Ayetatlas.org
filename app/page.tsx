@@ -97,6 +97,15 @@ const analysisFingerprints: Record<number, { chain: string; core: string }> = {
   106: { chain: "Yolculuk → Rızık → Güven → Tevekkül", core: "Kıtlık ve korku kökünden güven bilincine geçiş" },
 };
 
+const atlasPipeline = [
+  { no: "01", name: "Metin emaneti", text: "Arapça metin, sûre–âyet kimliği ve kıraat kaynağı değişmez çekirdekte tutulur.", state: "KAYNAK" },
+  { no: "02", name: "Dil laboratuvarı", text: "Kelime, kök, kalıp, gramer ve komşu âyet ilişkileri ayrı delil kayıtlarına dönüşür.", state: "DELİL" },
+  { no: "03", name: "Belge DNA’sı", text: "Word çalışmalarındaki kapı, çekirdek, ayna, akış ve mühür dili; hazır cevap değil, yorum grameri olarak çıkarılır.", state: "YÖNTEM" },
+  { no: "04", name: "Mana hipotezleri", text: "Farklı mercekler üretilir; lafzî anlam, aktarılan yorum ve sembolik okuma birbirine karıştırılmaz.", state: "HİPOTEZ" },
+  { no: "05", name: "Özgünlük kilidi", text: "Başka âyetlerden taşınan kalıplar, yüksek benzerlik ve delilsiz iddialar yayın öncesi durdurulur.", state: "DENETİM" },
+  { no: "06", name: "İnsan onayı", text: "Son metin; dil, bağlam, sevgi dili, güvenlik ve belge sadakati açısından gözden geçirilmeden tamamlanmış sayılmaz.", state: "ONAY" },
+];
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
@@ -111,6 +120,7 @@ export default function Home() {
   const [selectedWord, setSelectedWord] = useState(0);
   const [reflectionNote, setReflectionNote] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [engineOpen, setEngineOpen] = useState(false);
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
@@ -158,6 +168,7 @@ export default function Home() {
           <kbd>⌘ K</kbd>
         </label>
         <div className="header-actions">
+          <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setSupportOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
           <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => setSupportOpen(!supportOpen)}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
           <button className="icon-button" aria-label="Görünüm ayarları">◐</button>
           <button className="profile" aria-label="Profil">Ç</button>
@@ -187,6 +198,12 @@ export default function Home() {
       </aside>
 
       <section className="reader" id="top">
+        {engineOpen ? <section className="backstage">
+          <div className="backstage-hero glass"><span className="eyebrow">BUZDAĞININ GÖRÜNMEYEN KISMI</span><h1>Atlas Omurgası</h1><p>Görünen her yorumun arkasında metni koruyan, delili izleyen, tekrarları reddeden ve sembolik dili doğru etikette tutan bir üretim sistemi çalışmalı.</p><div className="backstage-stats"><span><b>6</b> yayın kapısı</span><span><b>3</b> bilgi sınıfı</span><span><b>1</b> değişmez ilke: metne sadakat</span></div></div>
+          <div className="pipeline-grid">{atlasPipeline.map((step) => <article className="pipeline-card" key={step.no}><span>{step.no}</span><small>{step.state}</small><h2>{step.name}</h2><p>{step.text}</p></article>)}</div>
+          <div className="evidence-ledger glass"><div><span className="eyebrow">DELİL DEFTERİ</span><h2>Her cümlenin kimliği olacak</h2><p>Motorun asıl zekâsı daha çok yorum üretmek değil, her yorumun nereden geldiğini ve ne kadar kesin olduğunu görünür kılmaktır.</p></div><ul><li><b>Metinsel bilgi</b><span>Âyet, kelime, kök, gramer, bağlam</span></li><li><b>Aktarılan yorum</b><span>Kaynak ve görüş adıyla, doğrudan izlenebilir</span></li><li><b>Mana hipotezi</b><span>Belge diliyle üretilmiş sembolik tefekkür; kesin hüküm değil</span></li></ul></div>
+          <div className="governance-row"><div><b>Tekrar radarı</b><p>Aynı düşünce iskeletinin farklı kelimelerle tekrarını da yakalar.</p></div><div><b>Çelişki aynası</b><p>Çatışan iddiaları silmez; yan yana getirip gerekçelerini gösterir.</p></div><div><b>Sürüm hafızası</b><p>Her değişiklik tarihlenir; eski yorum ve değişme nedeni korunur.</p></div></div>
+        </section> : <>
         <div className="reader-heading">
           <div>
             <span className="crumb">KUR’AN <i>›</i> {selectedSurah.name.toUpperCase()}</span>
@@ -232,10 +249,10 @@ export default function Home() {
         </section>}
 
         <div className="progress-track"><i></i></div>
-        <p className="reading-position">{selectedSurah.name.toUpperCase()} · 1 / {selectedSurah.count}</p>
+        <p className="reading-position">{selectedSurah.name.toUpperCase()} · 1 / {selectedSurah.count}</p></>}
       </section>
 
-      <aside className="insight-panel">
+      <aside className={engineOpen ? "insight-panel engine-hidden" : "insight-panel"}>
         <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div><button aria-label="Panel seçenekleri">•••</button></div>
         <section className="state-engine">
           <div className="state-engine-head"><span>♡</span><div><small>BAĞIMSIZ REHBER ALANI · HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>

@@ -67,6 +67,31 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .spark { color: var(--gold); }
 
 .reader { grid-column: 2; grid-row: 2; padding: 34px clamp(26px, 4vw, 68px) 40px; overflow: hidden; }
+.backstage { width: min(1040px,100%); margin: 0 auto; }
+.backstage-hero { padding: clamp(28px,5vw,58px); border-radius: 30px; background: radial-gradient(circle at 90% 10%,rgba(208,234,220,.9),transparent 38%),rgba(255,255,255,.65); }
+.backstage-hero h1 { margin: 8px 0 12px; font: clamp(34px,5vw,56px)/1 Georgia,serif; }
+.backstage-hero > p { max-width: 720px; color: var(--muted); font-size: 13px; line-height: 1.75; }
+.backstage-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.backstage-stats span { padding: 9px 12px; border-radius: 11px; background: rgba(255,255,255,.7); color: var(--green-deep); font-size: 9px; }
+.pipeline-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 18px 0; }
+.pipeline-card { min-height: 210px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.58); }
+.pipeline-card > span { color: var(--gold); font: 23px Georgia,serif; }
+.pipeline-card small { float: right; color: var(--green); font-size: 7px; letter-spacing: 1px; }
+.pipeline-card h2 { clear: both; margin: 24px 0 8px; font: 18px Georgia,serif; }
+.pipeline-card p { color: var(--muted); font-size: 10px; line-height: 1.65; }
+.evidence-ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 28px; border-radius: 24px; }
+.evidence-ledger h2 { font: 24px Georgia,serif; margin: 8px 0; }
+.evidence-ledger p { color: var(--muted); font-size: 10px; line-height: 1.65; }
+.evidence-ledger ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.evidence-ledger li { padding: 12px; border-radius: 12px; background: rgba(222,239,230,.5); }
+.evidence-ledger li b,.evidence-ledger li span { display: block; }
+.evidence-ledger li b { font-size: 10px; color: var(--green-deep); }
+.evidence-ledger li span { margin-top: 3px; color: var(--muted); font-size: 8px; }
+.governance-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 12px; }
+.governance-row > div { padding: 18px; border-radius: 17px; background: var(--green-deep); color: white; }
+.governance-row b { font: 15px Georgia,serif; }
+.governance-row p { color: rgba(255,255,255,.7); font-size: 8px; line-height: 1.55; }
+.engine-hidden { display: none; }
 .reader-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 26px; }
 .crumb { font-size: 9px; font-weight: 750; letter-spacing: 1.4px; color: var(--green); }
 .crumb i { color: #a4afa9; margin: 0 7px; font-style: normal; }
@@ -312,6 +337,9 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
   .brand small, .global-search, .header-actions .icon-button { display: none; }
   .support-entry { padding: 0 9px; }
   .support-entry span { display: none; }
+  .header-actions { gap: 4px; }
+  .header-actions .support-entry { width: 38px; padding: 0; display: grid; place-items: center; font-size: 0; }
+  .header-actions .support-entry span { display: block; font-size: 16px; }
   .mobile-menu { display: block; width: 38px; height: 38px; border-radius: 12px; }
   .sidebar { position: fixed; width: 275px; height: calc(100vh - 68px); top: 68px; left: 0; transform: translateX(-105%); transition: .3s ease; box-shadow: 20px 0 50px rgba(20,40,30,.15); background: rgba(249,249,246,.96); }
   .sidebar.open { transform: translateX(0); }
@@ -326,6 +354,9 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
   .insight-panel { height: auto; padding: 30px 17px; }
   .support-open .insight-panel { min-height: calc(100vh - 68px); height: auto; padding: 18px; }
   .scrim { display: block; position: fixed; inset: 68px 0 0; z-index: 10; border: 0; background: rgba(10,24,18,.25); backdrop-filter: blur(3px); }
+  .pipeline-grid,.evidence-ledger,.governance-row { grid-template-columns: 1fr; }
+  .pipeline-card { min-height: auto; }
+  .backstage-hero { border-radius: 22px; }
 }
 
 @media (max-width: 420px) {
