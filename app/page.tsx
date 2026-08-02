@@ -41,11 +41,11 @@ const words = [
 ];
 
 const manaLenses = [
-  { id: "oz", icon: "◉", name: "Öz Mana", prompt: "Bu söz, bütün isimler sustuğunda hangi özü işaret ediyor?", answer: "Dağınık parçaların sevgiyle aynı yöne dönmesi." },
-  { id: "sembol", icon: "◇", name: "Kadim Sembol", prompt: "Saf imgesi insanlığın ortak hafızasında neye dönüşür?", answer: "Çokluğun birliğini bozmadan kurduğu canlı düzen." },
-  { id: "golge", icon: "◐", name: "Gölge & Eşik", prompt: "Bu mana hangi iç çatışmayı görünür kılar?", answer: "Düşünce, söz ve eylemin birbirinden kopması." },
-  { id: "zaman", icon: "∞", name: "Zamansız Yankı", prompt: "Ayet geçmiş ve gelecek dışına alındığında ne söyler?", answer: "Her an yeniden hizalanmak mümkündür." },
-  { id: "sevgi", icon: "♡", name: "Sevgiye Çeviri", prompt: "Bu mana korku üretmeden nasıl konuşur?", answer: "Kendini zorlamadan, içindeki parçaları aynı sofraya davet et." },
+  { id: "kapi", icon: "◇", name: "Kapı", prompt: "Bu âyet hangi iç kapıyı açıyor?", answer: "Hiza Kapısı · Dağınık görünen parçaları tek bir niyet hattında buluşturma eşiği." },
+  { id: "cekirdek", icon: "◉", name: "Çekirdek", prompt: "Kapının özündeki sessiz komut ne?", answer: "Önce içindeki sesleri susturma; her birini aynı kalp çekirdeğine dönmeye davet et." },
+  { id: "ayna", icon: "◐", name: "Ayna", prompt: "Âyet bugün sana hangi eksik halkayı gösteriyor?", answer: "Düşüncen başka, sözün başka, adımın başka bir yöne gidiyorsa akış bölünür. Ayna, yargılamadan bu ayrılığı görünür kılar." },
+  { id: "akis", icon: "∞", name: "Akış", prompt: "Mana hangi dönüşüm hattında ilerliyor?", answer: "Niyet → Hiza → Koruma → Açılım. Saf, donmuş bir sıra değil; içten dışa akan canlı bir düzen hâlidir." },
+  { id: "muhur", icon: "♡", name: "Mühür", prompt: "Bu kapı şimdi-anda sevgiyle nasıl mühürlenir?", answer: "Kalbine dön ve içinden söyle: ‘Parçalarımı zorlamadan, öz niyetimde sevgiyle hizalıyorum.’" },
 ];
 
 export default function Home() {
@@ -54,7 +54,7 @@ export default function Home() {
   const [selected, setSelected] = useState(37);
   const [saved, setSaved] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const [manaLens, setManaLens] = useState("oz");
+  const [manaLens, setManaLens] = useState("kapi");
   const selectedSurah = surahs.find((s) => s.no === selected) ?? surahs[3];
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
   const filtered = useMemo(
@@ -148,8 +148,8 @@ export default function Home() {
         </div>
         {activeLayer === "hakikat" && <section className="mana-engine">
           <div className="mana-engine-head">
-            <div><span className="engine-pulse"></span><small>MANA MOTORU · V1</small><b>İsimlerin ötesinde anlam</b></div>
-            <span className="engine-state">SEVGİ FİLTRESİ AÇIK</span>
+            <div><span className="engine-pulse"></span><small>BELGE DNA’SI · MANA MOTORU</small><b>Kapıdan çekirdeğe derin iniş</b></div>
+            <span className="engine-state">ŞİMDİ-AN AÇIK</span>
           </div>
           <div className="mana-lenses" role="tablist" aria-label="Mana mercekleri">
             {manaLenses.map((lens) => <button key={lens.id} role="tab" aria-selected={manaLens === lens.id} className={manaLens === lens.id ? "active" : ""} onClick={() => setManaLens(lens.id)}><span>{lens.icon}</span>{lens.name}</button>)}
@@ -161,8 +161,11 @@ export default function Home() {
             <small>MANA HİPOTEZİ</small>
             <p>{lens.answer}</p>
           </div>)}
-          <div className="engine-principles"><span>Dogma dışı</span><span>Kültürler üstü</span><span>Zamansız</span><span>Şefkatli</span></div>
-          <p className="engine-disclaimer">Bu motor kanıt veya hüküm üretmez; semboller arasında sevgi merkezli anlam hipotezleri kurar. Kullanıcının özgür iradesini, inancını ve yorum hakkını korur.</p>
+          <div className="mana-spiral" aria-label="Mana motoru akışı">
+            <span><b>01</b> Kapıyı aç</span><i>→</i><span><b>02</b> Çekirdeğe in</span><i>→</i><span><b>03</b> Aynayı gör</span><i>→</i><span><b>04</b> Akışı kur</span><i>→</i><span><b>05</b> Mühürle</span>
+          </div>
+          <div className="engine-principles"><span>Kalp merkezli</span><span>Spiral okuma</span><span>Özgür irade</span><span>Sevgi dili</span></div>
+          <p className="engine-disclaimer">Belge dilinizden türetilen bu motor, âyeti lafzî anlamın yerine geçmeden sembolik bir “mana kapısı” olarak açar. Frekans, enerji, çekirdek ve mühür kavramları burada manevi metaforlardır; kesin bilgi, dinî hüküm veya sağlık iddiası değildir.</p>
         </section>}
         <div className="reflection glass">
           <div className="reflection-title"><span>◉</span><div><small>ŞİMDİ & BURADA</small><b>İç gözlem</b></div></div>

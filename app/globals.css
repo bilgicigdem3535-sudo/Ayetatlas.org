@@ -150,6 +150,10 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .engine-principles { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 11px; }
 .engine-principles span { border: 1px solid rgba(11,107,81,.11); color: var(--green); padding: 4px 6px; border-radius: 7px; font-size: 6px; text-transform: uppercase; letter-spacing: .7px; }
 .engine-disclaimer { color: var(--muted); font-size: 7.5px; line-height: 1.5; text-align: center; margin: 10px 4px 0; }
+.mana-spiral { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; margin-top: 11px; padding: 9px; border-radius: 11px; background: rgba(222,239,230,.48); }
+.mana-spiral span { font-size: 6px; color: var(--green-deep); white-space: nowrap; }
+.mana-spiral b { color: var(--gold); font: 6px var(--font-geist-mono); }
+.mana-spiral i { color: rgba(197,154,71,.7); font-style: normal; font-size: 8px; }
 .scrim { display: none; }
 
 @media (max-width: 1120px) {
