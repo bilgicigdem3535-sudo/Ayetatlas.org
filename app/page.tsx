@@ -2,6 +2,12 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { surahs } from "./surahs";
+import { aliImranBatch } from "./content/ali-imran-batch";
+import { maideBatch } from "./content/maide-batch";
+import { nisaBatch } from "./content/nisa-batch";
+import type { VerseStudy } from "./content/types";
+
+const verseStudies: Record<string, VerseStudy> = { ...aliImranBatch, ...nisaBatch, ...maideBatch };
 
 const layers = [
   {
@@ -106,6 +112,15 @@ const atlasPipeline = [
   { no: "06", name: "Belge dili doğrulaması", text: "İçerik; dil, bağlam, sevgi dili, özgünlük ve Word belgelerinizin yöntemine sadakat bakımından izlenebilir tutulur.", state: "İZ" },
 ];
 
+const decodeScales = [
+  { no: "M1", title: "Bütün Kur’an", text: "Tevhid, rahmet–adalet dengesi, ahit, insanın özgür cevabı ve dönüş eksenlerini ana gökyüzü olarak çıkarır.", direction: "MAKRO" },
+  { no: "M2", title: "Sûrenin görevi", text: "Sûrenin açılışı, dönüş noktaları, tekrarları ve kapanışı arasındaki mimariyi; bütün içindeki özgün görevini belirler.", direction: "MAKRO" },
+  { no: "M3", title: "Âyet komşuluğu", text: "Âyeti tek başına koparmaz; önceki–sonraki âyet, pasaj ve hitap değişimleriyle hangi soruya cevap verdiğini araştırır.", direction: "ORTA" },
+  { no: "µ1", title: "Kelime ve kök", text: "Kök, vezin, zamir, edat, zaman ve vurgu tercihlerini inceler; aynı kökün Kur’an’daki diğer kullanımlarıyla karşılaştırır.", direction: "MİKRO" },
+  { no: "µ2", title: "Harf ve ses izi", text: "Harf tekrarını ve ses ritmini gözlemler; sayısal veya fonetik örüntüyü anlamın kanıtı değil, araştırma işareti olarak tutar.", direction: "MİKRO" },
+  { no: "↺", title: "Çift yönlü doğrulama", text: "Mikro bulgunun sûre ve Kur’an bütünüyle çelişip çelişmediğini; makro iddianın da âyet lafzında gerçekten karşılığı olup olmadığını sınar.", direction: "DÖNÜŞ" },
+];
+
 type BlogPost = {
   id: number;
   surahNo: number;
@@ -145,11 +160,14 @@ export default function Home() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [blogLoading, setBlogLoading] = useState(false);
   const [blogMessage, setBlogMessage] = useState("");
+  const [textLevel, setTextLevel] = useState(0);
+  const [clarityMode, setClarityMode] = useState(false);
   const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", loading: false });
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
-  const hasDeepAnalysis = selected === 0 || (selected === 37 && currentVerse === 1);
+  const verseStudy = selected > 0 ? verseStudies[`${selected}:${currentVerse}`] : undefined;
+  const hasDeepAnalysis = selected === 0 || (selected === 37 && currentVerse === 1) || Boolean(verseStudy);
   const selectedFingerprint = analysisFingerprints[selected];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
@@ -232,7 +250,7 @@ export default function Home() {
   };
 
   return (
-    <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}`}>
+    <main data-text-level={textLevel} className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}${clarityMode ? " clarity-mode" : ""}`}>
       <header className="topbar glass">
         <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label={navOpen ? "Sûre menüsünü kapat" : "Sûre menüsünü aç"}>☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
@@ -306,6 +324,22 @@ export default function Home() {
           <div className="pipeline-grid">{atlasPipeline.map((step) => <article className="pipeline-card" key={step.no}><span>{step.no}</span><small>{step.state}</small><h2>{step.name}</h2><p>{step.text}</p></article>)}</div>
           <div className="evidence-ledger glass"><div><span className="eyebrow">DELİL DEFTERİ</span><h2>Her cümlenin kimliği olacak</h2><p>Motorun asıl zekâsı daha çok yorum üretmek değil, her yorumun nereden geldiğini ve ne kadar kesin olduğunu görünür kılmaktır.</p></div><ul><li><b>Metinsel bilgi</b><span>Âyet, kelime, kök, gramer, bağlam</span></li><li><b>Aktarılan yorum</b><span>Kaynak ve görüş adıyla, doğrudan izlenebilir</span></li><li><b>Mana hipotezi</b><span>Belge diliyle üretilmiş sembolik tefekkür; kesin hüküm değil</span></li></ul></div>
           <div className="governance-row"><div><b>Tekrar radarı</b><p>Aynı düşünce iskeletinin farklı kelimelerle tekrarını da yakalar.</p></div><div><b>Çelişki aynası</b><p>Çatışan iddiaları silmez; yan yana getirip gerekçelerini gösterir.</p></div><div><b>Sürüm hafızası</b><p>Her değişiklik tarihlenir; eski yorum ve değişme nedeni korunur.</p></div></div>
+          <section className="decode-map glass">
+            <div className="decode-intro"><span className="eyebrow">BÜTÜNSEL ÖRÜNTÜ OKUMASI · MANA HİPOTEZİ</span><h2>Makrodan mikroya, mikrodan makroya</h2><p>Bu alan “kesin gizli anlam” ilan etmez. Bir âyetin en küçük dil işaretini sûre ve Kur’an bütünü içinde sınayan; bütüne dair iddiayı da yeniden kelimeye döndürüp doğrulayan çift yönlü araştırma yöntemidir.</p></div>
+            <div className="decode-grid">{decodeScales.map((scale) => <article key={scale.no}><div><span>{scale.no}</span><small>{scale.direction}</small></div><h3>{scale.title}</h3><p>{scale.text}</p></article>)}</div>
+            <div className="decode-law"><b>Temel denklem</b><code>Mana güveni = Lafız × Bağlam × Bütünlük × Kaynak izi − Çelişki − Tekrar − Kesinlik taşması</code><p>Bir sonuç lafza dayanmıyor, yakın bağlamla çatışıyor veya sembolik hipotezi kesin bilgi gibi sunuyorsa derinlik değil gürültü sayılır.</p></div>
+          </section>
+        </section> : verseStudy ? <section className="verse-study">
+          <div className="verse-study-head"><span className="eyebrow">ÂYETE ÖZGÜ YEDİ KATMAN</span><h2>{selectedSurah.name} {currentVerse} · belge diliyle derin okuma</h2><p>{verseStudy.sourceBasis}</p></div>
+          <div className="study-stack">
+            <article><small>01 · LAFIZ ODAĞI</small><h3>Âyet neyi öne çıkarıyor?</h3><p>{verseStudy.literalFocus}</p></article>
+            <article><small>02 · KÖK VE DİL</small><h3>Kelimenin taşıdığı alan</h3><p>{verseStudy.rootLanguage}</p></article>
+            <article><small>03 · YAKIN BAĞLAM</small><h3>Pasaj içindeki görevi</h3><p>{verseStudy.context}</p></article>
+            <article><small>04 · BELGE OKUMASI</small><h3>Verdiğiniz dilin açtığı kapı</h3><p>{verseStudy.documentReading}</p></article>
+            <article className="hypothesis"><small>05 · SEMBOLİK HİPOTEZ</small><h3>Mana ihtimali</h3><p>{verseStudy.symbolicHypothesis}</p></article>
+          </div>
+          <div className="study-reflection"><span>◉</span><div><small>06 · TEFEKKÜR SORUSU</small><p>{verseStudy.reflection}</p></div></div>
+          <p className="method-note"><b>Yöntem ayrımı</b> · Lafız, kök ve bağlam dilsel katmandır; belge okuması ve sembolik hipotez kesin hüküm değil, açıkça etiketlenmiş tefekkür katmanıdır.</p>
         </section> : <>
         <div className="reader-heading">
           <div>
@@ -451,6 +485,12 @@ export default function Home() {
       </aside>
 
       {feedback && <button className="toast" onClick={() => setFeedback("")} aria-live="polite">{feedback} ×</button>}
+
+      <div className="reading-tools glass" aria-label="Okuma görünümü araçları">
+        <button onClick={() => setTextLevel((level) => Math.max(0, level - 1))} disabled={textLevel === 0} aria-label="Metni küçült">A−</button>
+        <button onClick={() => setTextLevel((level) => Math.min(2, level + 1))} disabled={textLevel === 2} aria-label="Metni büyüt">A+</button>
+        <button className={clarityMode ? "active" : ""} onClick={() => setClarityMode(!clarityMode)} aria-pressed={clarityMode} aria-label="Net görünümü aç veya kapat">◉ <span>Net</span></button>
+      </div>
 
       {navOpen && <button className="scrim" onClick={() => setNavOpen(false)} aria-label="Menüyü kapat" />}
     </main>
