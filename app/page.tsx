@@ -176,7 +176,12 @@ export default function Home() {
           <p className="arabic" lang="ar" dir="rtl">وَالصَّافَّاتِ صَفًّا</p>
           <p className="transliteration">Ve’s-sâffâti saffâ</p>
           <div className="translation"><span>ANLAM</span><p>Saf saf dizilenlere andolsun.</p></div>
-          <div className="verse-tools"><button>▶ <span>Dinle</span></button><button>◌ <span>Kelime kelime</span></button><button>↗ <span>Paylaş</span></button></div>
+          <div className="verse-tools"><button>◌ <span>Kelime kelime</span></button><button>↗ <span>Paylaş</span></button></div>
+          <div className="recitation-player">
+            <div className="recitation-meta"><span>▶</span><div><small>ÜCRETSİZ ÂYET SESİ</small><b>Mishary Rashid Alafasy · Sâffât 37:1</b></div></div>
+            <audio controls preload="none" src="https://verses.quran.foundation/Alafasy/mp3/037001.mp3">Tarayıcınız ses oynatmayı desteklemiyor.</audio>
+            <small className="audio-source">Kaynak: Quran.Foundation açık ses CDN’i</small>
+          </div>
         </article> : selected === 0 ? <article className="besmele-card glass">
           <span className="eyebrow">YENİ BELGE HAFIZASI · BESMELE ÇEKİRDEĞİ</span>
           <p className="besmele-arabic" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
