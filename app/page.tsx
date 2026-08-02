@@ -79,6 +79,17 @@ const besmeleKeepers = [
   { word: "الرَّحِيمِ", root: "ر ح م", name: "İçte Büyüten", role: "Aynı rahmet kökünü süreklilik ve yakınlık içinde mikro alana taşır.", confidence: "Kök + kalıp · yüksek" },
 ];
 
+const analysisFingerprints: Record<number, { chain: string; core: string }> = {
+  2: { chain: "Ahit → İnşa → Sınır → Toplum", core: "İnsan ve topluluk bilincinin adım adım inşası" },
+  3: { chain: "Hayy–Kayyûm → Eğrilik Aynası → Ortak Kelime → Sebat", core: "Kalbin doğrultusu ve hakikatte sebat" },
+  37: { chain: "Hiza → Koruma → Algı → Diriliş", core: "Dağınık parçaların tek maksat hattında saf tutması" },
+  48: { chain: "Açılış → Sekîne → Rıdvân → Tamamlanma", core: "İç fetih ve huzurun eyleme mühürlenmesi" },
+  49: { chain: "Ses → Haber → Zan → Kardeşlik", core: "İç zaferin toplumsal dilde korunması" },
+  51: { chain: "Savurma → Taşıma → Paylaştırma → Dönüş", core: "Hizalanmış tohumun hizmete ve paylaşıma açılması" },
+  103: { chain: "Zaman → Kayıp → İman/Amel → Hak/Sabır", core: "Kısacık zamanda kurtuluş devresinin dört anahtarı" },
+  106: { chain: "Yolculuk → Rızık → Güven → Tevekkül", core: "Kıtlık ve korku kökünden güven bilincine geçiş" },
+};
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
@@ -91,6 +102,7 @@ export default function Home() {
   const [supportMode, setSupportMode] = useState<"idle" | "low" | "focus" | "calm" | "money" | "love" | "work" | "urgent">("idle");
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
+  const selectedFingerprint = analysisFingerprints[selected];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
     [query],
@@ -173,8 +185,8 @@ export default function Home() {
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
           <span className="eyebrow">114 SÛRELİK TAM ATLAS</span>
           <h2>{selectedSurah.name} sûresi katalogda</h2>
-          <p>{selectedSurah.count} âyetin tamamı; lafız, kök, harf, bağlam ve sembolik tefekkür şemasına bağlanmak üzere aynı araştırma omurgasında yer alıyor.</p>
-          <div className="coverage-flow"><span>Lafız</span><i>→</i><span>Kök</span><i>→</i><span>Bağlam</span><i>→</i><span>Tefekkür</span></div>
+          {selectedFingerprint ? <><p>{selectedSurah.count} âyet, bu sûreye özgü “{selectedFingerprint.core}” çekirdeğiyle incelenecek. Başka sûreden hazır mana taşınmayacak.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu sûre için derin analiz henüz üretilmedi. Özgünlük kilidi nedeniyle başka âyetlerin açıklaması burada tekrar edilmeyecek.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
+          <div className="uniqueness-lock"><span>✓</span><div><b>Özgünlük Kilidi</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlikte yayın reddedilir.</small></div></div>
           <button onClick={() => setSelected(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
         </article>}
 
@@ -268,6 +280,7 @@ export default function Home() {
           <button className="note-button">Notlarıma ekle <span>＋</span></button>
         </div>
         <p className="method-note"><b>Yöntem notu</b> · Dil ve bağlam katmanları kaynaklandırılmalı; “hakikat-ötesi” bölümü ise sembolik/kişisel tefekkür olarak sunulur.</p>
+        <div className="quality-seal"><span>◎</span><div><b>Âyete Özgü Üretim</b><small>Genel metin kopyalama kapalı · benzerlik denetimi açık · delil izi zorunlu</small></div></div>
       </aside>
 
       {navOpen && <button className="scrim" onClick={() => setNavOpen(false)} aria-label="Menüyü kapat" />}
