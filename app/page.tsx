@@ -76,7 +76,7 @@ export default function Home() {
   const [secretLayer, setSecretLayer] = useState("ebced");
   const [supportInput, setSupportInput] = useState("");
   const [supportMode, setSupportMode] = useState<"idle" | "low" | "focus" | "calm" | "money" | "love" | "work" | "urgent">("idle");
-  const selectedSurah = surahs.find((s) => s.no === selected) ?? surahs[3];
+  const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
@@ -116,6 +116,9 @@ export default function Home() {
         <div className="side-heading"><span>SÛRELER</span><small>114</small></div>
         <div className="mini-search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre ara" /></div>
         <nav className="surah-list" aria-label="Sûreler">
+          <button className={selected === 0 ? "surah special active" : "surah special"} onClick={() => { setSelected(0); setNavOpen(false); }}>
+            <span className="surah-no">ب</span><span className="surah-copy"><b>Besmele</b><small>4 kelime · 19 harf · Belge çalışması</small></span><span className="surah-dot"></span>
+          </button>
           {filtered.map((surah) => (
             <button key={surah.no} className={selected === surah.no ? "surah active" : "surah"} onClick={() => { setSelected(surah.no); setNavOpen(false); }}>
               <span className="surah-no">{String(surah.no).padStart(3, "0")}</span>
@@ -146,6 +149,13 @@ export default function Home() {
           <p className="transliteration">Ve’s-sâffâti saffâ</p>
           <div className="translation"><span>ANLAM</span><p>Saf saf dizilenlere andolsun.</p></div>
           <div className="verse-tools"><button>▶ <span>Dinle</span></button><button>◌ <span>Kelime kelime</span></button><button>↗ <span>Paylaş</span></button></div>
+        </article> : selected === 0 ? <article className="besmele-card glass">
+          <span className="eyebrow">YENİ BELGE HAFIZASI · BESMELE ÇEKİRDEĞİ</span>
+          <p className="besmele-arabic" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+          <p className="besmele-meaning">Rahmân ve Rahîm olan Allah’ın adıyla.</p>
+          <div className="besmele-stats"><span><b>4</b> kelime</span><span><b>19</b> harf</span><span><b>5</b> ana kapı</span><span><b>7</b> sembolik kat</span></div>
+          <div className="besmele-flow"><span><b>Bâ–Nokta</b>Başlatan tohum</span><i>→</i><span><b>İsim</b>Niyeti tanımla</span><i>→</i><span><b>Allah</b>Kalp çekirdeği</span><i>→</i><span><b>Rahmân</b>Kuşatan rahmet</span><i>→</i><span><b>Rahîm</b>Tohumu eyleme doğur</span></div>
+          <div className="besmele-note"><b>Belgeden çıkan ana mana</b><p>Besmele yalnız bir başlangıç cümlesi değil; zihin → kalp → eylem hattını hizalayan sembolik bir köprüdür. Üst akış “inâyet”, alt akış “niyet” olarak okunur; görevliler bağımsız varlıklar değil, Başlat · Tanımla · Birleştir · Kapsa · Doğur işlevleridir.</p></div>
         </article> : <article className="coverage-card glass">
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
           <span className="eyebrow">114 SÛRELİK TAM ATLAS</span>
