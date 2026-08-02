@@ -1,18 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
-const surahs = [
-  { no: 1, name: "Fâtiha", meta: "7 âyet · Mekke", mark: "Açılış" },
-  { no: 2, name: "Bakara", meta: "286 âyet · Medine", mark: "İnceleniyor" },
-  { no: 3, name: "Âl-i İmrân", meta: "200 âyet · Medine", mark: "7 Kapı" },
-  { no: 37, name: "Sâffât", meta: "182 âyet · Mekke", mark: "Derin çalışma" },
-  { no: 48, name: "Fetih", meta: "29 âyet · Medine", mark: "Derin çalışma" },
-  { no: 49, name: "Hucurât", meta: "18 âyet · Medine", mark: "Notlar" },
-  { no: 51, name: "Zâriyât", meta: "60 âyet · Mekke", mark: "Notlar" },
-  { no: 103, name: "Asr", meta: "3 âyet · Mekke", mark: "4 Anahtar" },
-  { no: 106, name: "Kureyş", meta: "4 âyet · Mekke", mark: "Güven" },
-];
+import { surahs } from "./surahs";
 
 const layers = [
   {
@@ -90,7 +79,7 @@ export default function Home() {
           {filtered.map((surah) => (
             <button key={surah.no} className={selected === surah.no ? "surah active" : "surah"} onClick={() => { setSelected(surah.no); setNavOpen(false); }}>
               <span className="surah-no">{String(surah.no).padStart(3, "0")}</span>
-              <span className="surah-copy"><b>{surah.name}</b><small>{surah.meta}</small></span>
+              <span className="surah-copy"><b>{surah.name}</b><small>{surah.count} âyet · {surah.mark}</small></span>
               <span className="surah-dot" title={surah.mark}></span>
             </button>
           ))}
@@ -107,27 +96,34 @@ export default function Home() {
             <span className="crumb">KUR’AN <i>›</i> {selectedSurah.name.toUpperCase()}</span>
             <h1>{selectedSurah.name} <em>{selectedSurah.no}</em></h1>
           </div>
-          <div className="verse-nav"><button aria-label="Önceki âyet">‹</button><span>Âyet <b>1</b> / 182</span><button aria-label="Sonraki âyet">›</button></div>
+          <div className="verse-nav"><button aria-label="Önceki âyet">‹</button><span>Âyet <b>1</b> / {selectedSurah.count}</span><button aria-label="Sonraki âyet">›</button></div>
         </div>
 
-        <article className="verse-card glass">
+        {selected === 37 ? <article className="verse-card glass">
           <div className="verse-orbit"><span>1</span></div>
           <button className={saved ? "save saved" : "save"} onClick={() => setSaved(!saved)} aria-label="Âyeti kaydet">{saved ? "◆" : "◇"}</button>
           <p className="arabic" lang="ar" dir="rtl">وَالصَّافَّاتِ صَفًّا</p>
           <p className="transliteration">Ve’s-sâffâti saffâ</p>
           <div className="translation"><span>ANLAM</span><p>Saf saf dizilenlere andolsun.</p></div>
           <div className="verse-tools"><button>▶ <span>Dinle</span></button><button>◌ <span>Kelime kelime</span></button><button>↗ <span>Paylaş</span></button></div>
-        </article>
+        </article> : <article className="coverage-card glass">
+          <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
+          <span className="eyebrow">114 SÛRELİK TAM ATLAS</span>
+          <h2>{selectedSurah.name} sûresi katalogda</h2>
+          <p>{selectedSurah.count} âyetin tamamı; lafız, kök, harf, bağlam ve sembolik tefekkür şemasına bağlanmak üzere aynı araştırma omurgasında yer alıyor.</p>
+          <div className="coverage-flow"><span>Lafız</span><i>→</i><span>Kök</span><i>→</i><span>Bağlam</span><i>→</i><span>Tefekkür</span></div>
+          <button onClick={() => setSelected(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
+        </article>}
 
-        <section className="word-section">
+        {selected === 37 && <section className="word-section">
           <div className="section-title"><span>KELİME ATLASI</span><small>Bir kelimeye dokunarak kök katmanını aç</small></div>
           <div className="word-grid">
             {words.map((word, i) => <button className="word-card" key={word.ar}><small>{String(i + 1).padStart(2, "0")}</small><strong lang="ar">{word.ar}</strong><b>{word.tr}</b><span>{word.note}</span></button>)}
           </div>
-        </section>
+        </section>}
 
         <div className="progress-track"><i></i></div>
-        <p className="reading-position">SÂFFÂT · 1 / 182</p>
+        <p className="reading-position">{selectedSurah.name.toUpperCase()} · 1 / {selectedSurah.count}</p>
       </section>
 
       <aside className="insight-panel">
