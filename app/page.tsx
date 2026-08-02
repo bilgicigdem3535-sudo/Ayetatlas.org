@@ -41,13 +41,6 @@ const besmeleLayers = [
   { id: "hakikat", label: "Hakikat-ötesi", eyebrow: "SEMBOLİK OKUMA", title: "İnâyet aşağı, niyet yukarı akar", text: "Belge dilinizde üst akış rahmet ve inâyeti, alt akış insanın niyet ve eylemini temsil eder. Bu bir tefekkür hipotezidir; kesin ontolojik açıklama değildir." },
 ];
 
-const aliImranSixLayers = [
-  { id: "lafiz", label: "Lafız", eyebrow: "YARATILIŞIN İÇ MİMARİSİ", title: "Rahim içinde sûret verilmesi", text: "Âyet, insanın görünür biçimini tesadüfî ve sahipsiz bir oluş olarak değil; bilinmeyen iç katmanlarda ölçü, irade ve hikmetle şekillenen bir süreç olarak açar. ‘Sizi şekillendiren O’dur’ ifadesi, sureti veren ile sureti taşıyanı ayırır." },
-  { id: "kok", label: "Kök & Dil", eyebrow: "ص و ر · ر ح م · ش ي أ", title: "Sûret, rahim ve irade hattı", text: "Yusavvirukum, Ṣ–W–R kökünün etkin ve tekrar eden biçimlendirme anlamını taşır. Erhâm, R–Ḥ–M köküyle rahim ve rahmet arasında dilsel bir akrabalık kurar. ‘Keyfe yeşâ’ biçimlenmenin mekanik değil, iradeli olduğuna işaret eder." },
-  { id: "baglam", label: "Bağlam", eyebrow: "3:5 → 3:6 → AZÎZ–HAKÎM", title: "Gizliyi bilmekten gizlide biçim vermeye", text: "Önceki âyet yerde ve gökte hiçbir şeyin Allah’a gizli kalmadığını söyler; 6. âyet bu bilgiyi rahimlerin görünmeyen alanında gerçekleşen biçimlenmeye taşır. Sonundaki Azîz–Hakîm isimleri, kudret ile hikmetin aynı fiilde birleştiğini gösterir." },
-  { id: "hakikat", label: "Hakikat-ötesi", eyebrow: "BELGE DİLİYLE MANA HİPOTEZİ", title: "İç rahim: henüz görünmeyen benliğin oluşum odası", text: "Word belgelerinizin diliyle rahim, yalnız biyolojik mekân değil; kararların, niyetlerin ve yeni benliğin görünmeden şekillendiği ‘iç oda’ olarak da okunabilir. Âyetin kapısı: Bugünkü biçimim son hâlim değil; hikmet içinde yeniden şekillenebilirim. Bu katman sembolik tefekkürdür, âyetin lafzî anlamının yerine geçmez." },
-];
-
 const words = [
   { ar: "وَ", tr: "ve / andolsun", note: "Bağlar, akışı açar" },
   { ar: "الصَّافَّاتِ", tr: "saf saf dizilenler", note: "ص ف ف · düzen, sıra" },
@@ -126,7 +119,7 @@ type BlogPost = {
   createdAt: number;
 };
 
-type QuranVerse = { key: string; text: string; translation?: string; loading: boolean; error?: string };
+type QuranVerse = { key: string; text: string; loading: boolean; error?: string };
 
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
@@ -152,11 +145,11 @@ export default function Home() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [blogLoading, setBlogLoading] = useState(false);
   const [blogMessage, setBlogMessage] = useState("");
-  const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", translation: "Saf saf dizilenlere andolsun.", loading: false });
+  const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", loading: false });
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
-  const activeLayers = selected === 0 ? besmeleLayers : selected === 3 && currentVerse === 6 ? aliImranSixLayers : layers;
+  const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
-  const hasDeepAnalysis = selected === 0 || (selected === 37 && currentVerse === 1) || (selected === 3 && currentVerse === 6);
+  const hasDeepAnalysis = selected === 0 || (selected === 37 && currentVerse === 1);
   const selectedFingerprint = analysisFingerprints[selected];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
@@ -170,9 +163,9 @@ export default function Home() {
     setQuranVerse({ key, text: "", loading: true });
     try {
       const response = await fetch(`/api/quran/${surahNo}/${ayahNo}`);
-      const data = await response.json() as { text?: string; translation?: string; error?: string };
+      const data = await response.json() as { text?: string; error?: string };
       if (!response.ok || !data.text) throw new Error(data.error || "Âyet metni alınamadı.");
-      setQuranVerse({ key, text: data.text, translation: data.translation, loading: false });
+      setQuranVerse({ key, text: data.text, loading: false });
     } catch {
       setQuranVerse({ key, text: "", loading: false, error: "Arapça mushaf metni şu anda yüklenemedi." });
     }
@@ -297,13 +290,13 @@ export default function Home() {
               {!blogLoading && blogPosts.length === 0 ? <div className="blog-empty"><span>◇</span><h3>İlk çalışma için alan hazır</h3><p>Sağdaki yazar stüdyosundan ilk sûre belgesini ekleyebilirsiniz.</p></div> : <div className="blog-list">{blogPosts.map((post) => <article key={post.id}><div className="blog-post-no">{String(post.surahNo).padStart(3,"0")}</div><div><div className="blog-post-meta"><span>{post.surahName}</span><i>{post.status === "published" ? "Yayında" : "Belge arşivinde"}</i></div><h3>{post.title}</h3>{post.excerpt && <p>{post.excerpt}</p>}<small>{post.authorName} · {post.fileName} · {(post.fileSize / 1024 / 1024).toFixed(1)} MB</small></div></article>)}</div>}
             </section>
             <aside className="author-studio glass">
-              <span className="eyebrow">YAZAR STÜDYOSU</span><h2>Yeni belge ekle</h2><p>Belge doğrudan sûre arşivine eklenir. GPT çalışmasına kaynak olması için metin çıkarma ve kaynaklandırma aşaması ayrıca yürütülür; yükleme tek başına otomatik yorum üretmez.</p>
+              <span className="eyebrow">YAZAR STÜDYOSU</span><h2>Yeni belge ekle</h2><p>Belge doğrudan sûre arşivine eklenir. Dergi gibi sayfa çevirerek yayınlamak için PDF önerilir; Word dosyası ise düzenleme kaynağı olarak saklanır ve önce PDF’ye dönüştürülür.</p>
               <form onSubmit={submitBlogPost}>
                 <label><span>Yazar adı</span><input name="authorName" maxLength={80} placeholder="Adınız" required /></label>
                 <label><span>Sûre</span><select name="surahNo" defaultValue="" required><option value="" disabled>Sûre seçin</option>{surahs.map((surah) => <option key={surah.no} value={surah.no}>{surah.no}. {surah.name}</option>)}</select></label>
                 <label><span>Yazı başlığı</span><input name="title" maxLength={160} placeholder="Çalışmanın özgün başlığı" required /></label>
                 <label><span>Kısa özet</span><textarea name="excerpt" maxLength={600} placeholder="Belgenin ana mana kapısını birkaç cümleyle anlatın…" /></label>
-                <label className="file-drop"><span>Word veya PDF belgesi</span><input name="file" type="file" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required /><small>En fazla 10 MB · .docx veya .pdf</small></label>
+                <label className="file-drop"><span>PDF dergi veya Word kaynak belgesi</span><input name="file" type="file" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required /><small>PDF: doğrudan dergi görünümü · Word: önce PDF dönüşümü · En fazla 10 MB</small></label>
                 <button type="submit">Belgeyi sûre arşivine ekle <span>→</span></button>
               </form>
               {blogMessage && <div className="blog-message" aria-live="polite">{blogMessage}</div>}
@@ -350,15 +343,15 @@ export default function Home() {
             <div className="calligraphy-crown" aria-hidden="true"><i></i><span>۞</span><i></i></div>
             <span className="eyebrow">MUSHAF METNİ · OSMANÎ YAZIM</span>
             <div className="quran-verse-number"><span>{selectedSurah.name}</span><b>{currentVerse}</b></div>
-            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <><p className="quran-arabic-calligraphy" lang="ar" dir="rtl">{quranVerse.text}</p>{quranVerse.translation && <div className="quran-translation"><span>TÜRKÇE MEAL</span><p>{quranVerse.translation}</p></div>}</> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
+            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <p className="quran-arabic-calligraphy" lang="ar" dir="rtl">{quranVerse.text}</p> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
             <div className="calligraphy-foot" aria-hidden="true">◇ ─── ✦ ─── ◇</div>
-            <small className="quran-text-source">Kaynak: Al Quran Cloud · quran-uthmani · Türkçe Diyanet İşleri meali</small>
+            <small className="quran-text-source">Arapça metin kaynağı: Al Quran Cloud · quran-uthmani</small>
           </article>
           <article className="coverage-card glass">
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
           <span className="eyebrow">114 SÛRELİK İNCELEME KATALOĞU</span>
           <h2>{selectedSurah.name} {currentVerse}. âyet · {hasDeepAnalysis ? "derin mana haritası" : "özgün inceleme sırası"}</h2>
-          {selected === 3 && currentVerse === 6 ? <><p>“Sizi rahimlerde dilediği gibi şekillendiren O’dur.” Âyetin özgün kapısı, görünmeyen alanda sûret kazanma sırrıdır: bilgi kudrete, kudret biçime, biçim ise hikmet taşıyan bir kimliğe dönüşür.</p><div className="coverage-flow"><span>Gizliyi bilme</span><i>→</i><span>Rahim</span><i>→</i><span>Sûret verme</span><i>→</i><span>Azîz–Hakîm</span></div></> : hasDeepAnalysis && selectedFingerprint ? <><p>Word belgelerindeki özgün sûre izi GPT motorunun başlangıç yönüdür: “{selectedFingerprint.core}”. Bu âyet kendi kelimesi ve bağlamından ayrı bir mana kapısı üretir.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu âyetin Arapça mushaf metni hazırdır; derin içerik henüz üretilmiş gibi gösterilmiyor. GPT çalışması lafız, kök, komşu âyet ve sûre görevi üzerinden bu âyete özel hazırlanacaktır.</p><div className="coverage-flow"><span>Metin hazır</span><i>→</i><span>Kök çalışması</span><i>→</i><span>Bağlam çalışması</span><i>→</i><span>Özgün mana</span></div></>}
+          {hasDeepAnalysis && selectedFingerprint ? <><p>Bu âyet için Word belgelerinizde işlenmiş özgün sûre izi bulunuyor: “{selectedFingerprint.core}”.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu âyetin Arapça mushaf metni hazırdır. Word belgelerinizden işlenmiş âyete özel açıklama henüz bulunmadığı için yorum gösterilmiyor.</p><div className="coverage-flow"><span>Arapça metin hazır</span><i>→</i><span>Belge içeriği bekleniyor</span></div></>}
           <div className="uniqueness-lock"><span>✓</span><div><b>Otomatik Özgünlük Kontrolü</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlik, yeniden çalışma için işaretlenir.</small></div></div>
             <button onClick={() => chooseSurah(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
           </article>
@@ -403,7 +396,7 @@ export default function Home() {
           <p className="state-safety">Bu araç teşhis veya tedavi vermez. Düşük ruh hâli iki haftadan uzun sürüyor ya da günlük yaşamını etkiliyorsa bir ruh sağlığı uzmanıyla görüş.</p>
         </section>
         {!hasDeepAnalysis ? <section className="pending-analysis">
-          <span className="eyebrow">GPT MANA MOTORU</span><h3>Her âyet kendi dilinden açılır</h3><p>Word belgeleriniz hazır cevap deposu değil, GPT’nin yorum grameridir. Motor bu âyetin metnini, köklerini, komşu âyetlerini ve sûre içindeki görevini birleştirerek ona özel içerik üretir; Sâffât açıklamasını tekrar etmez.</p><div><b>1</b> Metni oku <i>→</i><b>2</b> Kök/gramer <i>→</i><b>3</b> Bağlam <i>→</i><b>4</b> Belge diliyle derinleştir</div>
+          <span className="eyebrow">BELGEYE DAYALI İNCELEME</span><h3>Bu âyet için yorum gösterilmiyor</h3><p>Sitede hazır AI yorumu kullanılmaz. Arapça metin korunur; açıklama yalnız Word belgelerinizden gerçekten işlenmiş, âyete özel içerik bulunduğunda açılır.</p><div><b>1</b> Arapça metin <i>→</i><b>2</b> Belge kaydı <i>→</i><b>3</b> Âyete özel içerik</div>
         </section> : <>
         <div className="layer-tabs" role="tablist">
           {activeLayers.map((item) => <button key={item.id} role="tab" aria-selected={activeLayer === item.id} className={activeLayer === item.id ? "active" : ""} onClick={() => setActiveLayer(item.id)}>{item.label}</button>)}
@@ -412,7 +405,7 @@ export default function Home() {
           <span className="eyebrow">{layer.eyebrow}</span>
           <h3>{layer.title}</h3>
           <p>{layer.text}</p>
-          <div className="quote-line"><i></i><p>{selected === 3 && currentVerse === 6 ? "“Sûret, yalnız dış biçim değil; görünmeyen hikmetin görünür dünyada taşıdığı izdir.”" : "“Hiza, benzer olmak değil; ayrı parçaların aynı hakikate yönelmesidir.”"}</p></div>
+          <div className="quote-line"><i></i><p>“Hiza, benzer olmak değil; ayrı parçaların aynı hakikate yönelmesidir.”</p></div>
         </div>
         {activeLayer === "hakikat" && selected === 37 && currentVerse === 1 && <section className="mana-engine">
           <div className="mana-engine-head">
@@ -453,7 +446,7 @@ export default function Home() {
         </section>}
         <div className="reflection glass">
           <div className="reflection-title"><span>◉</span><div><small>ŞİMDİ & BURADA</small><b>İç gözlem</b></div></div>
-          <p>{selected === 0 ? "Bugün hangi eylemi daha berrak bir niyet ve merhametle başlatabilirim?" : selected === 3 && currentVerse === 6 ? "Hayatımda henüz görünmeyen fakat içimde şekillenmekte olan hangi yeni hâle alan açabilirim?" : "Bugün düşüncem, sözüm ve eylemim hangi konuda aynı safta durmuyor?"}</p>
+          <p>{selected === 0 ? "Bugün hangi eylemi daha berrak bir niyet ve merhametle başlatabilirim?" : "Bugün düşüncem, sözüm ve eylemim hangi konuda aynı safta durmuyor?"}</p>
           <textarea value={reflectionNote} onChange={(e) => setReflectionNote(e.target.value)} aria-label="Tefekkür notu" placeholder="İlk gelen cümleyi yargılamadan yaz…"></textarea>
           <button className="note-button" disabled={!reflectionNote.trim()} onClick={saveReflection}>Notlarıma ekle <span>＋</span></button>
         </div>
