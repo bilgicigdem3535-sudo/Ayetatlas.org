@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { surahs } from "./surahs";
-import { verseStudies } from "./content";
+import type { VerseStudy } from "./content/types";
 
 const layers = [
   {
@@ -158,10 +158,10 @@ export default function Home() {
   const [textLevel, setTextLevel] = useState(0);
   const [clarityMode, setClarityMode] = useState(false);
   const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", loading: false });
+  const [verseStudy, setVerseStudy] = useState<VerseStudy>();
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
-  const verseStudy = selected > 0 ? verseStudies[`${selected}:${currentVerse}`] : undefined;
   const hasDeepAnalysis = selected === 0 || (selected === 37 && currentVerse === 1) || Boolean(verseStudy);
   const selectedFingerprint = analysisFingerprints[selected];
   const filtered = useMemo(
@@ -183,6 +183,17 @@ export default function Home() {
       setQuranVerse({ key, text: "", loading: false, error: "Arapça mushaf metni şu anda yüklenemedi." });
     }
   };
+  const loadVerseStudy = async (surahNo: number, ayahNo: number) => {
+    setVerseStudy(undefined);
+    try {
+      const response = await fetch(`/api/content?surah=${surahNo}&ayah=${ayahNo}&limit=1`);
+      const data = await response.json() as { items?: Array<{ study: VerseStudy }> };
+      setVerseStudy(response.ok ? data.items?.[0]?.study : undefined);
+    } catch {
+      setVerseStudy(undefined);
+    }
+  };
+
   const loadBlogPosts = async () => {
     setBlogLoading(true);
     try {
@@ -237,11 +248,11 @@ export default function Home() {
     localStorage.setItem(`ayet-atlasi-note-${selected}-1`, reflectionNote.trim());
     setFeedback("Tefekkür notu bu cihazda saklandı");
   };
-  const chooseSurah = (no: number) => { setSelected(no); setCurrentVerse(1); setNavOpen(false); setActiveLayer("lafiz"); if (no > 0) void loadQuranVerse(no, 1); };
+  const chooseSurah = (no: number) => { setSelected(no); setCurrentVerse(1); setNavOpen(false); setActiveLayer("lafiz"); if (no > 0) { void loadQuranVerse(no, 1); void loadVerseStudy(no, 1); } else setVerseStudy(undefined); };
   const goVerse = (direction: -1 | 1) => {
     const nextVerse = Math.min(selectedSurah.count, Math.max(1, currentVerse + direction));
     setCurrentVerse(nextVerse);
-    if (selected > 0) void loadQuranVerse(selected, nextVerse);
+    if (selected > 0) { void loadQuranVerse(selected, nextVerse); void loadVerseStudy(selected, nextVerse); }
   };
 
   return (

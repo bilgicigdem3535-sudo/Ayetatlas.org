@@ -15,7 +15,7 @@ interface Env {
 }
 
 const SECURITY_HEADERS: Record<string, string> = {
-  "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' https://download.quranicaudio.com https://verses.quran.foundation; connect-src 'self' https://api.alquran.cloud; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' https://download.quranicaudio.com https://verses.quran.foundation; connect-src 'self' https://api.alquran.cloud; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
   "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Resource-Policy": "same-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
@@ -51,6 +51,14 @@ interface ExecutionContext {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    const normalizedPath = url.pathname.replace(/\/{2,}/g, "/").replace(/[A-Z]/g, (letter) => letter.toLowerCase());
+    const withoutTrailingSlash = normalizedPath !== "/" && normalizedPath.endsWith("/") ? normalizedPath.slice(0, -1) : normalizedPath;
+    if (url.hostname === "www.ayetatlas.org" || withoutTrailingSlash !== url.pathname) {
+      url.hostname = url.hostname === "www.ayetatlas.org" ? "ayetatlas.org" : url.hostname;
+      url.pathname = withoutTrailingSlash;
+      return withPlatformHeaders(Response.redirect(url, 308), url.pathname);
+    }
 
     if (url.pathname === "/api/health") {
       return withPlatformHeaders(Response.json({

@@ -1,12 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "Amiri Quran";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("https://fonts.gstatic.com/s/amiriquran/v19/_Xmo-Hk0rD6DbUL4_vH8Zq5t.ttf") format("truetype");
-}
 
 :root {
   --ink: #13231d;
@@ -236,7 +229,7 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .quran-verse-number { position: absolute; top: 24px; right: 25px; display: flex; align-items: center; gap: 7px; color: var(--green); font-size: 7px; }
 .quran-verse-number b { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid rgba(197,154,71,.52); border-radius: 50%; color: var(--gold); font: 10px Georgia,serif; }
 .quran-arabic-calligraphy { position: relative; max-width: 900px; margin: 27px auto 18px; color: #07533e; font: 48px/2.05 "Amiri Quran","KFGQPC Uthmanic Script HAFS","Traditional Arabic","Noto Naskh Arabic",serif; letter-spacing: normal; overflow-wrap: anywhere; filter: drop-shadow(0 2px 0 rgba(255,255,255,.8)); }
-.arabic,.besmele-arabic,.quran-arabic-calligraphy,.word-card strong,.keeper-verse { font-family: "Amiri Quran","KFGQPC Uthmanic Script HAFS","Noto Naskh Arabic","Traditional Arabic",serif; font-weight: 400; letter-spacing: normal; }
+.arabic,.besmele-arabic,.quran-arabic-calligraphy,.word-card strong,.keeper-verse { font-family: var(--font-amiri-quran),"KFGQPC Uthmanic Script HAFS","Noto Naskh Arabic","Traditional Arabic",serif; font-weight: 400; letter-spacing: normal; }
 .arabic-loading { margin: 68px 0; color: var(--muted); font: italic 13px Georgia,serif; }
 .calligraphy-foot { color: rgba(197,154,71,.74); font-size: 12px; letter-spacing: 3px; }
 .quran-text-source { display: block; margin-top: 8px; color: var(--muted); font-size: 6.5px; letter-spacing: .45px; }
@@ -548,3 +541,14 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 }
 
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+
+.verse-page,.not-found { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 80px; }
+.verse-page nav { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.verse-page nav a,.not-found a { color: var(--green-700); }
+.verse-page article { background: rgba(255,255,255,.74); border: 1px solid var(--line); border-radius: 28px; padding: clamp(24px,5vw,54px); box-shadow: var(--shadow); }
+.verse-page h1 { font-family: Georgia,serif; font-size: clamp(34px,6vw,58px); margin: 8px 0 26px; }
+.verse-page header .arabic { min-height: 1.5em; margin: 20px 0 34px; }
+.verse-page section { border-top: 1px solid var(--line); padding: 24px 0; }
+.verse-page section h2 { font-family: Georgia,serif; margin: 0 0 10px; }
+.verse-page section p { line-height: 1.8; margin: 0; }
+.not-found { min-height: 70vh; display: grid; align-content: center; justify-items: start; gap: 12px; }

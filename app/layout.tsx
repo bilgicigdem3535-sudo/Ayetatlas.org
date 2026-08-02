@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Amiri_Quran, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import WebVitals from "./web-vitals";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const amiriQuran = Amiri_Quran({ variable: "--font-amiri-quran", subsets: ["arabic"], weight: "400" });
 
 export const metadata: Metadata = {
   title: "Âyet Atlası — Katmanlı Kur’an Araştırması",
   description: "Kur’an âyetlerini lafız, kök, bağlam ve sembolik tefekkür katmanlarında keşfedin.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   metadataBase: new URL("https://ayetatlas.org"),
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/", languages: { "tr-TR": "/", "x-default": "/" } },
   manifest: "/manifest.webmanifest",
   robots: { index: true, follow: true },
   openGraph: { type: "website", locale: "tr_TR", siteName: "Âyet Atlası", title: "Âyet Atlası", description: "Arapça mushaf metni ve belgeye dayalı katmanlı Kur’an araştırması.", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Âyet Atlası — ipek beyazı ve yeşil tonlarında katmanlı Kur’an araştırması" }] },
@@ -27,5 +29,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       { "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", position: 1, name: "Âyet Atlası", item: "https://ayetatlas.org/" }] },
     ],
   };
-  return <html lang="tr"><body className={`${geistSans.variable} ${geistMono.variable}`}><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />{children}</body></html>;
+  return <html lang="tr"><head><link rel="preconnect" href="https://download.quranicaudio.com" crossOrigin="anonymous" /><link rel="dns-prefetch" href="https://verses.quran.foundation" /><style>{"html{background:#faf8f1}body{margin:0}.app-shell{min-height:100vh}"}</style></head><body className={`${geistSans.variable} ${geistMono.variable} ${amiriQuran.variable}`}><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />{children}<WebVitals /></body></html>;
 }

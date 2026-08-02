@@ -6,9 +6,13 @@ export const runtime = "edge";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const requestedSurah = Number(url.searchParams.get("surah") ?? 0);
+  const requestedAyah = Number(url.searchParams.get("ayah") ?? 0);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") ?? 50)));
   const cursor = Math.max(0, Number(url.searchParams.get("cursor") ?? 0));
-  const filtered = requestedSurah > 0 ? verseStudyEntries.filter(([key]) => key.startsWith(`${requestedSurah}:`)) : verseStudyEntries;
+  const filtered = verseStudyEntries.filter(([key]) => {
+    const [surahNo, ayahNo] = key.split(":").map(Number);
+    return (!requestedSurah || surahNo === requestedSurah) && (!requestedAyah || ayahNo === requestedAyah);
+  });
   const items = filtered.slice(cursor, cursor + limit).map(([key, study]) => {
     const [surahNo, ayahNo] = key.split(":").map(Number);
     return {
