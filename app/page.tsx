@@ -100,6 +100,7 @@ export default function Home() {
   const [secretLayer, setSecretLayer] = useState("ebced");
   const [supportInput, setSupportInput] = useState("");
   const [supportMode, setSupportMode] = useState<"idle" | "low" | "focus" | "calm" | "money" | "love" | "work" | "urgent">("idle");
+  const [supportOpen, setSupportOpen] = useState(false);
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
   const selectedFingerprint = analysisFingerprints[selected];
@@ -119,7 +120,7 @@ export default function Home() {
   };
 
   return (
-    <main className="app-shell">
+    <main className={supportOpen ? "app-shell support-open" : "app-shell"}>
       <header className="topbar glass">
         <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label="Sûre menüsünü aç">☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
@@ -132,12 +133,14 @@ export default function Home() {
           <kbd>⌘ K</kbd>
         </label>
         <div className="header-actions">
+          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => setSupportOpen(!supportOpen)}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
           <button className="icon-button" aria-label="Görünüm ayarları">◐</button>
           <button className="profile" aria-label="Profil">Ç</button>
         </div>
       </header>
 
       <aside className={`sidebar glass ${navOpen ? "open" : ""}`}>
+        <button className="side-support-entry" onClick={() => { setSupportOpen(true); setNavOpen(false); }}><span>♡</span><div><b>Hâlden Âyete</b><small>Hayat hâlleri için ayrı rehber alanı</small></div><i>→</i></button>
         <div className="side-heading"><span>SÛRELER</span><small>114</small></div>
         <div className="mini-search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre ara" /></div>
         <nav className="surah-list" aria-label="Sûreler">
@@ -204,7 +207,7 @@ export default function Home() {
       <aside className="insight-panel">
         <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div><button aria-label="Panel seçenekleri">•••</button></div>
         <section className="state-engine">
-          <div className="state-engine-head"><span>♡</span><div><small>HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>
+          <div className="state-engine-head"><span>♡</span><div><small>BAĞIMSIZ REHBER ALANI · HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>
           <textarea value={supportInput} onChange={(e) => setSupportInput(e.target.value)} placeholder="Örn. Moralim bozuk, dalgınım, hiçbir şeye odaklanamıyorum…" aria-label="Ruh hâlini anlat"></textarea>
           <div className="state-chips"><button onClick={() => setSupportInput("Moralim bozuk ve yalnız hissediyorum")}>Moral düşük</button><button onClick={() => setSupportInput("Dalgınım, odaklanamıyorum")}>Dalgınlık</button><button onClick={() => setSupportInput("Kaygılı ve gerginim")}>Kaygı</button><button onClick={() => setSupportInput("Parasızım, borçlarım yüzünden korkuyorum")}>Parasızlık</button><button onClick={() => setSupportInput("Ayrıldık, aşk acısı çekiyorum")}>Aşk acısı</button><button onClick={() => setSupportInput("Uzun süredir iş bulamıyorum")}>İş bulamama</button></div>
           <button className="state-submit" disabled={!supportInput.trim()} onClick={runSupportEngine}>Mana kapısını bul <span>→</span></button>
