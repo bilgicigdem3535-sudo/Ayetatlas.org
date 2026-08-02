@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { surahs } from "./surahs";
 
 const layers = [
@@ -106,6 +106,19 @@ const atlasPipeline = [
   { no: "06", name: "İnsan onayı", text: "Son metin; dil, bağlam, sevgi dili, güvenlik ve belge sadakati açısından gözden geçirilmeden tamamlanmış sayılmaz.", state: "ONAY" },
 ];
 
+type BlogPost = {
+  id: number;
+  surahNo: number;
+  surahName: string;
+  title: string;
+  excerpt: string;
+  authorName: string;
+  fileName: string;
+  fileSize: number;
+  status: "review" | "published" | "draft";
+  createdAt: number;
+};
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
@@ -126,6 +139,10 @@ export default function Home() {
   const [listenOpen, setListenOpen] = useState(false);
   const [listenSurah, setListenSurah] = useState(1);
   const [listenQuery, setListenQuery] = useState("");
+  const [blogOpen, setBlogOpen] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [blogLoading, setBlogLoading] = useState(false);
+  const [blogMessage, setBlogMessage] = useState("");
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
@@ -138,6 +155,37 @@ export default function Home() {
   const listenFiltered = useMemo(() => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(listenQuery.toLocaleLowerCase("tr"))), [listenQuery]);
   const listeningSurah = surahs.find((s) => s.no === listenSurah) ?? surahs[0];
   const fullSurahAudio = `https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/${String(listenSurah).padStart(3, "0")}.mp3`;
+  const loadBlogPosts = async () => {
+    setBlogLoading(true);
+    try {
+      const response = await fetch("/api/blog");
+      if (!response.ok) throw new Error("Blog arşivi yüklenemedi.");
+      const data = await response.json() as { posts: BlogPost[] };
+      setBlogPosts(data.posts);
+    } catch {
+      setBlogMessage("Blog arşivine şu anda ulaşılamıyor.");
+    } finally {
+      setBlogLoading(false);
+    }
+  };
+  const submitBlogPost = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const surahNo = Number(data.get("surahNo"));
+    data.set("surahName", surahs.find((item) => item.no === surahNo)?.name ?? "");
+    setBlogMessage("Belge güvenli arşive aktarılıyor…");
+    try {
+      const response = await fetch("/api/blog", { method: "POST", body: data });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Belge eklenemedi.");
+      form.reset();
+      setBlogMessage("Belge blog arşivine eklendi ve incelemeye alındı.");
+      await loadBlogPosts();
+    } catch (error) {
+      setBlogMessage(error instanceof Error ? error.message : "Belge eklenemedi.");
+    }
+  };
   const runSupportEngine = () => {
     const value = supportInput.toLocaleLowerCase("tr");
     if (/intihar|ölmek ist|yaşamak istem|kendime zarar|canıma/.test(value)) setSupportMode("urgent");
@@ -165,7 +213,7 @@ export default function Home() {
   const goVerse = (direction: -1 | 1) => setCurrentVerse((verse) => Math.min(selectedSurah.count, Math.max(1, verse + direction)));
 
   return (
-    <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}`}>
+    <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}`}>
       <header className="topbar glass">
         <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label="Sûre menüsünü aç">☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
@@ -178,9 +226,10 @@ export default function Home() {
           <kbd>⌘ K</kbd>
         </label>
         <div className="header-actions">
-          <button className={listenOpen ? "support-entry active" : "support-entry"} onClick={() => { setListenOpen(!listenOpen); setSupportOpen(false); setEngineOpen(false); }}><span>▶</span>{listenOpen ? "Atlas’a dön" : "Kur’an Dinle"}</button>
-          <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setSupportOpen(false); setListenOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
-          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => { setSupportOpen(!supportOpen); setEngineOpen(false); setListenOpen(false); }}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
+          <button className={blogOpen ? "support-entry active" : "support-entry"} onClick={() => { if (!blogOpen) void loadBlogPosts(); setBlogOpen(!blogOpen); setListenOpen(false); setSupportOpen(false); setEngineOpen(false); }}><span>✎</span>{blogOpen ? "Atlas’a dön" : "Blog"}</button>
+          <button className={listenOpen ? "support-entry active" : "support-entry"} onClick={() => { setListenOpen(!listenOpen); setBlogOpen(false); setSupportOpen(false); setEngineOpen(false); }}><span>▶</span>{listenOpen ? "Atlas’a dön" : "Kur’an Dinle"}</button>
+          <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setBlogOpen(false); setSupportOpen(false); setListenOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
+          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => { setSupportOpen(!supportOpen); setBlogOpen(false); setEngineOpen(false); setListenOpen(false); }}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
           <button className="icon-button" onClick={() => setNightMode(!nightMode)} aria-pressed={nightMode} aria-label={nightMode ? "Aydınlık görünüme geç" : "Gece görünümüne geç"}>◐</button>
           <span className="profile" aria-label="Çiğdem profili">Ç</span>
         </div>
@@ -209,7 +258,32 @@ export default function Home() {
       </aside>
 
       <section className="reader" id="top">
-        {listenOpen ? <section className="listen-workspace">
+        {blogOpen ? <section className="blog-workspace">
+          <div className="blog-hero glass">
+            <span className="eyebrow">SÛRELERİN YAŞAYAN BELGE HAFIZASI</span>
+            <h1>Âyet Atlası Yazıları</h1>
+            <p>Yazarların sûreler üzerine hazırladığı özgün Word ve PDF çalışmalarını tek bir arşivde toplar. Her belge yayımdan önce kaynak, dil ve tekrar incelemesine girer.</p>
+            <div className="blog-hero-stats"><span><b>{blogPosts.length}</b> belge</span><span><b>114</b> sûre alanı</span><span><b>1</b> insan onayı kapısı</span></div>
+          </div>
+          <div className="blog-layout">
+            <section className="blog-archive glass">
+              <div className="blog-section-head"><div><span className="eyebrow">BLOG ARŞİVİ</span><h2>Sûre çalışmaları</h2></div><small>{blogLoading ? "Yükleniyor…" : "En yeni belgeler"}</small></div>
+              {!blogLoading && blogPosts.length === 0 ? <div className="blog-empty"><span>◇</span><h3>İlk çalışma için alan hazır</h3><p>Sağdaki yazar stüdyosundan ilk sûre belgesini ekleyebilirsiniz.</p></div> : <div className="blog-list">{blogPosts.map((post) => <article key={post.id}><div className="blog-post-no">{String(post.surahNo).padStart(3,"0")}</div><div><div className="blog-post-meta"><span>{post.surahName}</span><i>{post.status === "published" ? "Yayında" : "İncelemede"}</i></div><h3>{post.title}</h3>{post.excerpt && <p>{post.excerpt}</p>}<small>{post.authorName} · {post.fileName} · {(post.fileSize / 1024 / 1024).toFixed(1)} MB</small></div></article>)}</div>}
+            </section>
+            <aside className="author-studio glass">
+              <span className="eyebrow">YAZAR STÜDYOSU</span><h2>Yeni belge ekle</h2><p>Belge arşive “incelemede” olarak eklenir; editör onayı olmadan kesin yorum veya yayımlanmış içerik sayılmaz.</p>
+              <form onSubmit={submitBlogPost}>
+                <label><span>Yazar adı</span><input name="authorName" maxLength={80} placeholder="Adınız" required /></label>
+                <label><span>Sûre</span><select name="surahNo" defaultValue="" required><option value="" disabled>Sûre seçin</option>{surahs.map((surah) => <option key={surah.no} value={surah.no}>{surah.no}. {surah.name}</option>)}</select></label>
+                <label><span>Yazı başlığı</span><input name="title" maxLength={160} placeholder="Çalışmanın özgün başlığı" required /></label>
+                <label><span>Kısa özet</span><textarea name="excerpt" maxLength={600} placeholder="Belgenin ana mana kapısını birkaç cümleyle anlatın…" /></label>
+                <label className="file-drop"><span>Word veya PDF belgesi</span><input name="file" type="file" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required /><small>En fazla 10 MB · .docx veya .pdf</small></label>
+                <button type="submit">Belgeyi incelemeye gönder <span>→</span></button>
+              </form>
+              {blogMessage && <div className="blog-message" aria-live="polite">{blogMessage}</div>}
+            </aside>
+          </div>
+        </section> : listenOpen ? <section className="listen-workspace">
           <div className="listen-hero glass"><span className="eyebrow">BAĞIMSIZ KUR’AN DİNLEME ALANI</span><h1>Kur’an Dinle</h1><p>114 sûreyi tam sûre olarak dinleyin. Âyet incelemelerindeki tek âyet sesleri bu alandan bağımsız çalışmaya devam eder.</p><div className="listen-now"><span>{String(listenSurah).padStart(3,"0")}</span><div><small>ŞİMDİ SEÇİLİ</small><h2>{listeningSurah.name}</h2><p>{listeningSurah.count} âyet · Mishary Rashid Alafasy</p></div></div><audio key={fullSurahAudio} controls preload="metadata" src={fullSurahAudio}>Tarayıcınız ses oynatmayı desteklemiyor.</audio><small className="listen-source">Ücretsiz ses kaynağı: QuranicAudio.com</small></div>
           <div className="listen-library glass"><div className="listen-library-head"><div><span className="eyebrow">SÛRE KÜTÜPHANESİ</span><h2>Dinlemek istediğiniz sûreyi seçin</h2></div><label><span>⌕</span><input value={listenQuery} onChange={(e) => setListenQuery(e.target.value)} placeholder="Sûre adı veya numarası" aria-label="Dinlenecek sûreyi ara" /></label></div><div className="listen-grid">{listenFiltered.map((surah) => <button key={surah.no} className={listenSurah === surah.no ? "active" : ""} onClick={() => setListenSurah(surah.no)}><span>{String(surah.no).padStart(3,"0")}</span><div><b>{surah.name}</b><small>{surah.count} âyet</small></div><i>{listenSurah === surah.no ? "♪" : "▶"}</i></button>)}</div></div>
         </section> : engineOpen ? <section className="backstage">
@@ -266,7 +340,7 @@ export default function Home() {
         <p className="reading-position">{selectedSurah.name.toUpperCase()} · {currentVerse} / {selectedSurah.count}</p></>}
       </section>
 
-      <aside className={engineOpen || listenOpen ? "insight-panel engine-hidden" : "insight-panel"}>
+      <aside className={engineOpen || listenOpen || blogOpen ? "insight-panel engine-hidden" : "insight-panel"}>
         <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div></div>
         <section className="state-engine">
           <div className="state-engine-head"><span>♡</span><div><small>BAĞIMSIZ REHBER ALANI · HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>
