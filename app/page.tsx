@@ -49,7 +49,7 @@ const manaLenses = [
 ];
 
 const secretLayers = [
-  { id: "ebced", icon: "۷۸۰", name: "Ebced & Harf", tag: "HESAPLANABİLİR", title: "Yazılı harf toplamı: 780", text: "و ا ل ص ا ف ا ت ص ف ا · 11 temel harf · 6 benzersiz harf. Şeddeyi ayrıca çift harf sayan yöntemde toplam 870 olur. Sayısal kök: 6.", formula: "609 + 171 = 780  →  7+8+0 = 15  →  1+5 = 6" },
+  { id: "ebced", icon: "۷۸۰", name: "Ebced & Gematria", tag: "HESAPLANABİLİR", title: "Karşılaştırmalı harf-sayı matrisi", text: "و ا ل ص ا ف ا ت ص ف ا · 11 yazılı harf · 6 benzersiz harf. Motor aynı diziyi dört ayrı hesap geleneğinde işler; sonuçları birbirine kanıt saymadan örüntü karşılaştırması olarak gösterir.", formula: "Klasik Ebced 780 · Sıralı değer 114 · İndirgenmiş toplam 51 · Kök 6" },
   { id: "gates", icon: "◇", name: "Makro / Mikro Kapılar", tag: "SEMBOLİK HARİTA", title: "Makro Kapı: Hiza", text: "Mikro kapılar sırasıyla Niyet, Söz ve Eylem’dir. Kapı ancak üçü aynı hatta bakarken akış üretir; biri ayrıldığında âyet ‘eksik halka aynası’ olarak çalışır.", formula: "Niyet → Söz → Eylem → Hiza" },
   { id: "keepers", icon: "◉", name: "Görevliler", tag: "ARKETİPSEL ROLLER", title: "Kapı görevlisi: Es-Sâff", text: "Bir varlık iddiası değil, motorun sembolik görev adıdır. Dağınık parçaları zorlamadan sıraya çağırır. Ayna görevlisi ayrılığı gösterir; mühür görevlisi sevgiyi korur.", formula: "Çağıran · Gösteren · Koruyan · Mühürleyen" },
   { id: "dimensions", icon: "∞", name: "Boyut & Paralel", tag: "MANA HİPOTEZİ", title: "Dört boyutlu okuma", text: "1D harf, 2D kelime ilişkisi, 3D yaşanan davranış, 4D zaman boyunca tekrar eden örüntüdür. ‘Paralel’ mercek, aynı niyetin seçildiği ve seçilmediği iki olası yaşam akışını karşılaştırır.", formula: "Metin → İlişki → Deneyim → Döngü" },
@@ -57,6 +57,13 @@ const secretLayers = [
   { id: "formula", icon: "M", name: "Mana Formülü", tag: "SEMBOLİK MODEL", title: "Akış denklemi", text: "Mana yoğunluğu; niyet, hiza ve şefkat birlikte arttığında derinleşir; iç gürültü yükseldiğinde görünmezleşir. Denklem ölçüm değil, tefekkür pusulasıdır.", formula: "M = (Niyet × Hiza × Şefkat) ÷ (Gürültü + 1)" },
   { id: "chemistry", icon: "⚗", name: "Simyasal / Kimyasal", tag: "DÖNÜŞÜM METAFORU", title: "İçsel bağ kurma tepkimesi", text: "Dağınık düşünce ve duygu, niyet katalizörüyle birleşerek tutarlı eyleme dönüşür. Buradaki ‘kimya’ fiziksel reaksiyon veya sağlık iddiası değildir.", formula: "Düşünce + Duygu + Niyet(k) → Hiza → Eylem" },
   { id: "between", icon: "⋯", name: "Satırarası Sır", tag: "GİZLİ KATMAN", title: "Söylenmeyenin aynası", text: "Âyet ‘neye hizalanmalı?’ sorusunun cevabını burada söylemez. Boşluk, okuyucunun niyetini görünür kılar: güç, korku, hizmet veya sevgi. Sır, cevaptan önce niyetin açığa çıkmasıdır.", formula: "Görünen → İşaret → Bağlantı → Sır" },
+];
+
+const numberSystems = [
+  { name: "Klasik Ebced", value: "780", note: "Yazılı harf değerleri; şedde ayrı sayılmaz" },
+  { name: "Sıralı Harf", value: "114", note: "Arapça ebced sırasındaki konumların toplamı" },
+  { name: "İndirgenmiş", value: "51", note: "Her klasik değerin tek haneye indirgenmiş toplamı" },
+  { name: "Gematria Merceği", value: "6", note: "Toplamın sayısal kökü; sembolik karşılaştırma" },
 ];
 
 export default function Home() {
@@ -183,6 +190,7 @@ export default function Home() {
             </div>
             {secretLayers.filter((item) => item.id === secretLayer).map((item) => <div className="secret-result" key={item.id}>
               <small>{item.tag}</small><h5>{item.title}</h5><p>{item.text}</p><code>{item.formula}</code>
+              {item.id === "ebced" && <div className="number-matrix">{numberSystems.map((system) => <div key={system.name}><small>{system.name}</small><b>{system.value}</b><span>{system.note}</span></div>)}</div>}
             </div>)}
           </div>
           <div className="engine-principles"><span>Kalp merkezli</span><span>Spiral okuma</span><span>Özgür irade</span><span>Sevgi dili</span></div>
