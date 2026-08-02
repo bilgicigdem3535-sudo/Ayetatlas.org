@@ -109,7 +109,7 @@ const atlasPipeline = [
   { no: "02", name: "Dil laboratuvarı", text: "Kelime, kök, kalıp, gramer ve komşu âyet ilişkileri ayrı delil kayıtlarına dönüşür.", state: "DELİL" },
   { no: "03", name: "Belge DNA’sı", text: "Word çalışmalarındaki kapı, çekirdek, ayna, akış ve mühür dili; hazır cevap değil, yorum grameri olarak çıkarılır.", state: "YÖNTEM" },
   { no: "04", name: "Mana hipotezleri", text: "Farklı mercekler üretilir; lafzî anlam, aktarılan yorum ve sembolik okuma birbirine karıştırılmaz.", state: "HİPOTEZ" },
-  { no: "05", name: "Özgünlük kilidi", text: "Başka âyetlerden taşınan kalıplar, yüksek benzerlik ve delilsiz iddialar yayın öncesi durdurulur.", state: "DENETİM" },
+  { no: "05", name: "Özgünlük kilidi", text: "Başka âyetlerden taşınan kalıplar, yüksek benzerlik ve delilsiz iddialar otomatik kalite kontrolünde işaretlenir.", state: "DENETİM" },
   { no: "06", name: "Belge dili doğrulaması", text: "GPT üretimi; dil, bağlam, sevgi dili, özgünlük ve Word belgelerinizin yöntemine sadakat bakımından kendi izini görünür tutar.", state: "İZ" },
 ];
 
@@ -122,11 +122,11 @@ type BlogPost = {
   authorName: string;
   fileName: string;
   fileSize: number;
-  status: "review" | "published" | "draft";
+  status: "archived" | "review" | "published" | "draft";
   createdAt: number;
 };
 
-type QuranVerse = { key: string; text: string; loading: boolean; error?: string };
+type QuranVerse = { key: string; text: string; translation?: string; loading: boolean; error?: string };
 
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
@@ -152,7 +152,7 @@ export default function Home() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [blogLoading, setBlogLoading] = useState(false);
   const [blogMessage, setBlogMessage] = useState("");
-  const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", loading: false });
+  const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", translation: "Saf saf dizilenlere andolsun.", loading: false });
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : selected === 3 && currentVerse === 6 ? aliImranSixLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
@@ -170,9 +170,9 @@ export default function Home() {
     setQuranVerse({ key, text: "", loading: true });
     try {
       const response = await fetch(`/api/quran/${surahNo}/${ayahNo}`);
-      const data = await response.json() as { text?: string; error?: string };
+      const data = await response.json() as { text?: string; translation?: string; error?: string };
       if (!response.ok || !data.text) throw new Error(data.error || "Âyet metni alınamadı.");
-      setQuranVerse({ key, text: data.text, loading: false });
+      setQuranVerse({ key, text: data.text, translation: data.translation, loading: false });
     } catch {
       setQuranVerse({ key, text: "", loading: false, error: "Arapça mushaf metni şu anda yüklenemedi." });
     }
@@ -202,7 +202,7 @@ export default function Home() {
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Belge eklenemedi.");
       form.reset();
-      setBlogMessage("Belge blog arşivine eklendi ve incelemeye alındı.");
+      setBlogMessage("Belge sûre arşivine eklendi ve mana motoruna kaynak oldu.");
       await loadBlogPosts();
     } catch (error) {
       setBlogMessage(error instanceof Error ? error.message : "Belge eklenemedi.");
@@ -241,7 +241,7 @@ export default function Home() {
   return (
     <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}`}>
       <header className="topbar glass">
-        <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label="Sûre menüsünü aç">☰</button>
+        <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label={navOpen ? "Sûre menüsünü kapat" : "Sûre menüsünü aç"}>☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
           <span className="brand-glyph">ن</span>
           <span><b>Âyet Atlası</b><small>Katmanlı Kur’an Araştırması</small></span>
@@ -267,13 +267,13 @@ export default function Home() {
         <div className="mini-search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre ara" /></div>
         <nav className="surah-list" aria-label="Sûreler">
           <button className={selected === 0 ? "surah special active" : "surah special"} onClick={() => chooseSurah(0)}>
-            <span className="surah-no">ب</span><span className="surah-copy"><b>Besmele</b><small>4 kelime · 19 harf · Belge çalışması</small></span><span className="surah-dot"></span>
+            <span className="surah-no">ب</span><span className="surah-copy"><b>Besmele</b><small>4 kelime · 19 harf · Belge çalışması</small></span><span className="surah-dot" aria-hidden="true"></span>
           </button>
           {filtered.map((surah) => (
             <button key={surah.no} className={selected === surah.no ? "surah active" : "surah"} onClick={() => chooseSurah(surah.no)}>
               <span className="surah-no">{String(surah.no).padStart(3, "0")}</span>
               <span className="surah-copy"><b>{surah.name}</b><small>{surah.count} âyet · {surah.mark}</small></span>
-              <span className="surah-dot" title={surah.mark}></span>
+              <span className="surah-dot" aria-hidden="true"></span>
             </button>
           ))}
         </nav>
@@ -288,7 +288,7 @@ export default function Home() {
           <div className="blog-hero glass">
             <span className="eyebrow">SÛRELERİN YAŞAYAN BELGE HAFIZASI</span>
             <h1>Âyet Atlası Yazıları</h1>
-            <p>Yazarların sûreler üzerine hazırladığı özgün Word ve PDF çalışmalarını tek bir arşivde toplar. Her belge yayımdan önce kaynak, dil ve tekrar incelemesine girer.</p>
+            <p>Yazarların sûreler üzerine hazırladığı özgün Word ve PDF çalışmalarını tek bir arşivde toplar. Her belge, seçilen sûrenin mana dilini zenginleştiren doğrudan yöntem kaynağı olarak saklanır.</p>
             <div className="blog-hero-stats"><span><b>{blogPosts.length}</b> belge</span><span><b>114</b> sûre alanı</span><span><b>1</b> belge dili motoru</span></div>
           </div>
           <div className="blog-layout">
@@ -297,14 +297,14 @@ export default function Home() {
               {!blogLoading && blogPosts.length === 0 ? <div className="blog-empty"><span>◇</span><h3>İlk çalışma için alan hazır</h3><p>Sağdaki yazar stüdyosundan ilk sûre belgesini ekleyebilirsiniz.</p></div> : <div className="blog-list">{blogPosts.map((post) => <article key={post.id}><div className="blog-post-no">{String(post.surahNo).padStart(3,"0")}</div><div><div className="blog-post-meta"><span>{post.surahName}</span><i>{post.status === "published" ? "Yayında" : "Belge arşivinde"}</i></div><h3>{post.title}</h3>{post.excerpt && <p>{post.excerpt}</p>}<small>{post.authorName} · {post.fileName} · {(post.fileSize / 1024 / 1024).toFixed(1)} MB</small></div></article>)}</div>}
             </section>
             <aside className="author-studio glass">
-              <span className="eyebrow">YAZAR STÜDYOSU</span><h2>Yeni belge ekle</h2><p>Belge doğrudan sûre arşivine eklenir ve GPT’nin o sûreye özgü mana dili için yöntem kaynağı olur.</p>
+              <span className="eyebrow">YAZAR STÜDYOSU</span><h2>Yeni belge ekle</h2><p>Belge doğrudan sûre arşivine eklenir. GPT çalışmasına kaynak olması için metin çıkarma ve kaynaklandırma aşaması ayrıca yürütülür; yükleme tek başına otomatik yorum üretmez.</p>
               <form onSubmit={submitBlogPost}>
                 <label><span>Yazar adı</span><input name="authorName" maxLength={80} placeholder="Adınız" required /></label>
                 <label><span>Sûre</span><select name="surahNo" defaultValue="" required><option value="" disabled>Sûre seçin</option>{surahs.map((surah) => <option key={surah.no} value={surah.no}>{surah.no}. {surah.name}</option>)}</select></label>
                 <label><span>Yazı başlığı</span><input name="title" maxLength={160} placeholder="Çalışmanın özgün başlığı" required /></label>
                 <label><span>Kısa özet</span><textarea name="excerpt" maxLength={600} placeholder="Belgenin ana mana kapısını birkaç cümleyle anlatın…" /></label>
                 <label className="file-drop"><span>Word veya PDF belgesi</span><input name="file" type="file" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required /><small>En fazla 10 MB · .docx veya .pdf</small></label>
-                <button type="submit">Belgeyi incelemeye gönder <span>→</span></button>
+                <button type="submit">Belgeyi sûre arşivine ekle <span>→</span></button>
               </form>
               {blogMessage && <div className="blog-message" aria-live="polite">{blogMessage}</div>}
             </aside>
@@ -313,7 +313,7 @@ export default function Home() {
           <div className="listen-hero glass"><span className="eyebrow">BAĞIMSIZ KUR’AN DİNLEME ALANI</span><h1>Kur’an Dinle</h1><p>114 sûreyi tam sûre olarak dinleyin. Âyet incelemelerindeki tek âyet sesleri bu alandan bağımsız çalışmaya devam eder.</p><div className="listen-now"><span>{String(listenSurah).padStart(3,"0")}</span><div><small>ŞİMDİ SEÇİLİ</small><h2>{listeningSurah.name}</h2><p>{listeningSurah.count} âyet · Mishary Rashid Alafasy</p></div></div><audio key={fullSurahAudio} controls preload="metadata" src={fullSurahAudio}>Tarayıcınız ses oynatmayı desteklemiyor.</audio><small className="listen-source">Ücretsiz ses kaynağı: QuranicAudio.com</small></div>
           <div className="listen-library glass"><div className="listen-library-head"><div><span className="eyebrow">SÛRE KÜTÜPHANESİ</span><h2>Dinlemek istediğiniz sûreyi seçin</h2></div><label><span>⌕</span><input value={listenQuery} onChange={(e) => setListenQuery(e.target.value)} placeholder="Sûre adı veya numarası" aria-label="Dinlenecek sûreyi ara" /></label></div><div className="listen-grid">{listenFiltered.map((surah) => <button key={surah.no} className={listenSurah === surah.no ? "active" : ""} onClick={() => setListenSurah(surah.no)}><span>{String(surah.no).padStart(3,"0")}</span><div><b>{surah.name}</b><small>{surah.count} âyet</small></div><i>{listenSurah === surah.no ? "♪" : "▶"}</i></button>)}</div></div>
         </section> : engineOpen ? <section className="backstage">
-          <div className="backstage-hero glass"><span className="eyebrow">BUZDAĞININ GÖRÜNMEYEN KISMI</span><h1>Atlas Omurgası</h1><p>Görünen her yorumun arkasında metni koruyan, delili izleyen, tekrarları reddeden ve sembolik dili doğru etikette tutan bir üretim sistemi çalışmalı.</p><div className="backstage-stats"><span><b>6</b> yayın kapısı</span><span><b>3</b> bilgi sınıfı</span><span><b>1</b> değişmez ilke: metne sadakat</span></div></div>
+          <div className="backstage-hero glass"><span className="eyebrow">BUZDAĞININ GÖRÜNMEYEN KISMI</span><h1>Atlas Omurgası</h1><p>Görünen her yorumun arkasında metni koruyan, delili izleyen, tekrarları işaretleyen ve sembolik dili doğru etikette tutan bir üretim sistemi çalışmalı.</p><div className="backstage-stats"><span><b>6</b> kalite adımı</span><span><b>3</b> bilgi sınıfı</span><span><b>1</b> değişmez ilke: metne sadakat</span></div></div>
           <div className="pipeline-grid">{atlasPipeline.map((step) => <article className="pipeline-card" key={step.no}><span>{step.no}</span><small>{step.state}</small><h2>{step.name}</h2><p>{step.text}</p></article>)}</div>
           <div className="evidence-ledger glass"><div><span className="eyebrow">DELİL DEFTERİ</span><h2>Her cümlenin kimliği olacak</h2><p>Motorun asıl zekâsı daha çok yorum üretmek değil, her yorumun nereden geldiğini ve ne kadar kesin olduğunu görünür kılmaktır.</p></div><ul><li><b>Metinsel bilgi</b><span>Âyet, kelime, kök, gramer, bağlam</span></li><li><b>Aktarılan yorum</b><span>Kaynak ve görüş adıyla, doğrudan izlenebilir</span></li><li><b>Mana hipotezi</b><span>Belge diliyle üretilmiş sembolik tefekkür; kesin hüküm değil</span></li></ul></div>
           <div className="governance-row"><div><b>Tekrar radarı</b><p>Aynı düşünce iskeletinin farklı kelimelerle tekrarını da yakalar.</p></div><div><b>Çelişki aynası</b><p>Çatışan iddiaları silmez; yan yana getirip gerekçelerini gösterir.</p></div><div><b>Sürüm hafızası</b><p>Her değişiklik tarihlenir; eski yorum ve değişme nedeni korunur.</p></div></div>
@@ -350,16 +350,16 @@ export default function Home() {
             <div className="calligraphy-crown" aria-hidden="true"><i></i><span>۞</span><i></i></div>
             <span className="eyebrow">MUSHAF METNİ · OSMANÎ YAZIM</span>
             <div className="quran-verse-number"><span>{selectedSurah.name}</span><b>{currentVerse}</b></div>
-            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <p className="quran-arabic-calligraphy" lang="ar" dir="rtl">{quranVerse.text}</p> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
+            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <><p className="quran-arabic-calligraphy" lang="ar" dir="rtl">{quranVerse.text}</p>{quranVerse.translation && <div className="quran-translation"><span>TÜRKÇE MEAL</span><p>{quranVerse.translation}</p></div>}</> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
             <div className="calligraphy-foot" aria-hidden="true">◇ ─── ✦ ─── ◇</div>
-            <small className="quran-text-source">Doğrulanmış Osmanî Arapça metin · Al Quran Cloud</small>
+            <small className="quran-text-source">Kaynak: Al Quran Cloud · quran-uthmani · Türkçe Diyanet İşleri meali</small>
           </article>
           <article className="coverage-card glass">
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
           <span className="eyebrow">114 SÛRELİK İNCELEME KATALOĞU</span>
-          <h2>{selectedSurah.name} {currentVerse}. âyet · derin mana haritası</h2>
-          {selected === 3 && currentVerse === 6 ? <><p>“Sizi rahimlerde dilediği gibi şekillendiren O’dur.” Âyetin özgün kapısı, görünmeyen alanda sûret kazanma sırrıdır: bilgi kudrete, kudret biçime, biçim ise hikmet taşıyan bir kimliğe dönüşür.</p><div className="coverage-flow"><span>Gizliyi bilme</span><i>→</i><span>Rahim</span><i>→</i><span>Sûret verme</span><i>→</i><span>Azîz–Hakîm</span></div></> : selectedFingerprint ? <><p>Word belgelerindeki özgün sûre izi GPT motorunun başlangıç yönüdür: “{selectedFingerprint.core}”. Her âyet bu ana izle ilişkilendirilir; fakat kendi kelimesi ve bağlamından ayrı bir mana kapısı üretir.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>GPT mana motoru bu âyeti lafız, kök, komşu âyetler ve sûre içindeki görevi üzerinden ayrı bir çalışma olarak ele alır. Başka âyetlerin hazır açıklaması buraya taşınmaz.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
-          <div className="uniqueness-lock"><span>✓</span><div><b>Özgünlük Kilidi</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlikte yayın reddedilir.</small></div></div>
+          <h2>{selectedSurah.name} {currentVerse}. âyet · {hasDeepAnalysis ? "derin mana haritası" : "özgün inceleme sırası"}</h2>
+          {selected === 3 && currentVerse === 6 ? <><p>“Sizi rahimlerde dilediği gibi şekillendiren O’dur.” Âyetin özgün kapısı, görünmeyen alanda sûret kazanma sırrıdır: bilgi kudrete, kudret biçime, biçim ise hikmet taşıyan bir kimliğe dönüşür.</p><div className="coverage-flow"><span>Gizliyi bilme</span><i>→</i><span>Rahim</span><i>→</i><span>Sûret verme</span><i>→</i><span>Azîz–Hakîm</span></div></> : hasDeepAnalysis && selectedFingerprint ? <><p>Word belgelerindeki özgün sûre izi GPT motorunun başlangıç yönüdür: “{selectedFingerprint.core}”. Bu âyet kendi kelimesi ve bağlamından ayrı bir mana kapısı üretir.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu âyetin Arapça mushaf metni hazırdır; derin içerik henüz üretilmiş gibi gösterilmiyor. GPT çalışması lafız, kök, komşu âyet ve sûre görevi üzerinden bu âyete özel hazırlanacaktır.</p><div className="coverage-flow"><span>Metin hazır</span><i>→</i><span>Kök çalışması</span><i>→</i><span>Bağlam çalışması</span><i>→</i><span>Özgün mana</span></div></>}
+          <div className="uniqueness-lock"><span>✓</span><div><b>Otomatik Özgünlük Kontrolü</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlik, yeniden çalışma için işaretlenir.</small></div></div>
             <button onClick={() => chooseSurah(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
           </article>
         </div>}

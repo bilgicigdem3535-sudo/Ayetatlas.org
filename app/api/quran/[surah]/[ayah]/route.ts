@@ -10,16 +10,19 @@ export async function GET(_request: Request, context: RouteContext) {
     return Response.json({ error: "Geçersiz sûre veya âyet numarası." }, { status: 400 });
   }
 
-  const response = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNo}:${ayahNo}/quran-uthmani`, {
-    headers: { Accept: "application/json" },
-    cf: { cacheTtl: 86400, cacheEverything: true },
-  });
-  if (!response.ok) return Response.json({ error: "Mushaf kaynağına ulaşılamadı." }, { status: 502 });
-  const payload = await response.json() as { data?: { text?: string; numberInSurah?: number } };
-  if (!payload.data?.text || payload.data.numberInSurah !== ayahNo) {
+  const requestOptions = { headers: { Accept: "application/json" }, cf: { cacheTtl: 86400, cacheEverything: true } };
+  const [arabicResponse, translationResponse] = await Promise.all([
+    fetch(`https://api.alquran.cloud/v1/ayah/${surahNo}:${ayahNo}/quran-uthmani`, requestOptions),
+    fetch(`https://api.alquran.cloud/v1/ayah/${surahNo}:${ayahNo}/tr.diyanet`, requestOptions),
+  ]);
+  if (!arabicResponse.ok) return Response.json({ error: "Mushaf kaynağına ulaşılamadı." }, { status: 502 });
+  type QuranData = { text?: string; numberInSurah?: number; surah?: { number?: number }; edition?: { identifier?: string } };
+  const payload = await arabicResponse.json() as { data?: QuranData };
+  const translationPayload = translationResponse.ok ? await translationResponse.json() as { data?: QuranData } : undefined;
+  if (!payload.data?.text || payload.data.numberInSurah !== ayahNo || payload.data.surah?.number !== surahNo || payload.data.edition?.identifier !== "quran-uthmani") {
     return Response.json({ error: "Âyet metni doğrulanamadı." }, { status: 502 });
   }
-  return Response.json({ text: payload.data.text, surah: surahNo, ayah: ayahNo }, {
+  return Response.json({ text: payload.data.text, translation: translationPayload?.data?.text, surah: surahNo, ayah: ayahNo }, {
     headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800" },
   });
 }

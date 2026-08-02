@@ -26,7 +26,7 @@ async function ensureSchema() {
     file_name TEXT NOT NULL,
     file_type TEXT NOT NULL,
     file_size INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'review',
+    status TEXT NOT NULL DEFAULT 'archived',
     created_at INTEGER NOT NULL
   )`).run();
   await bindings.DB.prepare("CREATE INDEX IF NOT EXISTS blog_posts_created_at_idx ON blog_posts(created_at)").run();
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     const createdAt = Date.now();
     const result = await bindings.DB.prepare(`INSERT INTO blog_posts
       (surah_no, surah_name, title, excerpt, author_name, file_key, file_name, file_type, file_size, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'review', ?)`)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'archived', ?)`)
       .bind(surahNo, surahName, title, excerpt, authorName, fileKey, file.name, file.type || "application/octet-stream", file.size, createdAt)
       .run();
     return Response.json({ ok: true, id: result.meta.last_row_id }, { status: 201 });
