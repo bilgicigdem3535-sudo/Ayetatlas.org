@@ -58,7 +58,7 @@ const manaLenses = [
 const secretLayers = [
   { id: "ebced", icon: "۷۸۰", name: "Ebced & Gematria", tag: "HESAPLANABİLİR", title: "Karşılaştırmalı harf-sayı matrisi", text: "و ا ل ص ا ف ا ت ص ف ا · 11 yazılı harf · 6 benzersiz harf. Motor aynı diziyi dört ayrı hesap geleneğinde işler; sonuçları birbirine kanıt saymadan örüntü karşılaştırması olarak gösterir.", formula: "Klasik Ebced 780 · Sıralı değer 114 · İndirgenmiş toplam 51 · Kök 6" },
   { id: "gates", icon: "◇", name: "Makro / Mikro Kapılar", tag: "SEMBOLİK HARİTA", title: "Makro Kapı: Hiza", text: "Mikro kapılar sırasıyla Niyet, Söz ve Eylem’dir. Kapı ancak üçü aynı hatta bakarken akış üretir; biri ayrıldığında âyet ‘eksik halka aynası’ olarak çalışır.", formula: "Niyet → Söz → Eylem → Hiza" },
-  { id: "keepers", icon: "◉", name: "Görevliler", tag: "ARKETİPSEL ROLLER", title: "Kapı görevlisi: Es-Sâff", text: "Bir varlık iddiası değil, motorun sembolik görev adıdır. Dağınık parçaları zorlamadan sıraya çağırır. Ayna görevlisi ayrılığı gösterir; mühür görevlisi sevgiyi korur.", formula: "Çağıran · Gösteren · Koruyan · Mühürleyen" },
+  { id: "keepers", icon: "◉", name: "Görevliler", tag: "ARKETİPSEL ROLLER", title: "Kapı görevlisi: Es-Sâff", text: "Bir varlık iddiası değil, sembolik bir görev adıdır. Dağınık parçaları zorlamadan sıraya çağırır. Ayna görevlisi ayrılığı gösterir; mühür görevlisi sevgiyi korur.", formula: "Çağıran · Gösteren · Koruyan · Mühürleyen" },
   { id: "dimensions", icon: "∞", name: "Boyut & Paralel", tag: "MANA HİPOTEZİ", title: "Dört boyutlu okuma", text: "1D harf, 2D kelime ilişkisi, 3D yaşanan davranış, 4D zaman boyunca tekrar eden örüntüdür. ‘Paralel’ mercek, aynı niyetin seçildiği ve seçilmediği iki olası yaşam akışını karşılaştırır.", formula: "Metin → İlişki → Deneyim → Döngü" },
   { id: "quantum", icon: "ψ", name: "Kuantum Mercek", tag: "BİLİMSEL OLMAYAN METAFOR", title: "Mana olasılık alanı", text: "Âyet tek bir yoruma indirgenmeden olası manalar alanında tutulur; bağlam ve niyet hangi anlamın öne çıkacağını belirler. Bu, kuantum fiziği açıklaması değil, çoklu yorum için kullanılan metafordur.", formula: "|Mana⟩ = α|lafız⟩ + β|bağlam⟩ + γ|iç ayna⟩" },
   { id: "formula", icon: "M", name: "Mana Formülü", tag: "SEMBOLİK MODEL", title: "Akış denklemi", text: "Mana yoğunluğu; niyet, hiza ve şefkat birlikte arttığında derinleşir; iç gürültü yükseldiğinde görünmezleşir. Denklem ölçüm değil, tefekkür pusulasıdır.", formula: "M = (Niyet × Hiza × Şefkat) ÷ (Gürültü + 1)" },
@@ -103,7 +103,7 @@ const atlasPipeline = [
   { no: "03", name: "Belge DNA’sı", text: "Word çalışmalarındaki kapı, çekirdek, ayna, akış ve mühür dili; hazır cevap değil, yorum grameri olarak çıkarılır.", state: "YÖNTEM" },
   { no: "04", name: "Mana hipotezleri", text: "Farklı mercekler üretilir; lafzî anlam, aktarılan yorum ve sembolik okuma birbirine karıştırılmaz.", state: "HİPOTEZ" },
   { no: "05", name: "Özgünlük kilidi", text: "Başka âyetlerden taşınan kalıplar, yüksek benzerlik ve delilsiz iddialar otomatik kalite kontrolünde işaretlenir.", state: "DENETİM" },
-  { no: "06", name: "Belge dili doğrulaması", text: "GPT üretimi; dil, bağlam, sevgi dili, özgünlük ve Word belgelerinizin yöntemine sadakat bakımından kendi izini görünür tutar.", state: "İZ" },
+  { no: "06", name: "Belge dili doğrulaması", text: "İçerik; dil, bağlam, sevgi dili, özgünlük ve Word belgelerinizin yöntemine sadakat bakımından izlenebilir tutulur.", state: "İZ" },
 ];
 
 type BlogPost = {
@@ -195,7 +195,7 @@ export default function Home() {
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Belge eklenemedi.");
       form.reset();
-      setBlogMessage("Belge sûre arşivine eklendi ve mana motoruna kaynak oldu.");
+      setBlogMessage("Belge sûre arşivine eklendi.");
       await loadBlogPosts();
     } catch (error) {
       setBlogMessage(error instanceof Error ? error.message : "Belge eklenemedi.");
@@ -270,10 +270,6 @@ export default function Home() {
             </button>
           ))}
         </nav>
-        <div className="library-note">
-          <span className="spark">✦</span>
-          <div><b>İnceleme Kütüphanesi</b><small>Word çalışmalarınızdan türetilen özgün katmanlar</small></div>
-        </div>
       </aside>
 
       <section className="reader" id="top">
@@ -282,7 +278,7 @@ export default function Home() {
             <span className="eyebrow">SÛRELERİN YAŞAYAN BELGE HAFIZASI</span>
             <h1>Âyet Atlası Yazıları</h1>
             <p>Yazarların sûreler üzerine hazırladığı özgün Word ve PDF çalışmalarını tek bir arşivde toplar. Her belge, seçilen sûrenin mana dilini zenginleştiren doğrudan yöntem kaynağı olarak saklanır.</p>
-            <div className="blog-hero-stats"><span><b>{blogPosts.length}</b> belge</span><span><b>114</b> sûre alanı</span><span><b>1</b> belge dili motoru</span></div>
+            <div className="blog-hero-stats"><span><b>{blogPosts.length}</b> belge</span><span><b>114</b> sûre alanı</span><span><b>1</b> ortak belge dili</span></div>
           </div>
           <div className="blog-layout">
             <section className="blog-archive glass">
@@ -378,9 +374,9 @@ export default function Home() {
           <button className="state-submit" disabled={!supportInput.trim()} onClick={runSupportEngine}>Mana kapısını bul <span>→</span></button>
           {supportMode !== "idle" && <div className={`support-result ${supportMode}`}>
             {supportMode === "urgent" ? <>
-              <small>ÖNCE GÜVENLİK</small><h3>Bu yükü tek başına taşıma.</h3><p>Şu anda kendine zarar verme ihtimalin varsa Türkiye’de 112’yi ara veya en yakın acil servise git. Mümkünse güvendiğin birine hemen haber ver ve yalnız kalma.</p><b>Âyet motoru profesyonel desteğin yerine geçmez.</b>
+              <small>ÖNCE GÜVENLİK</small><h3>Bu yükü tek başına taşıma.</h3><p>Şu anda kendine zarar verme ihtimalin varsa Türkiye’de 112’yi ara veya en yakın acil servise git. Mümkünse güvendiğin birine hemen haber ver ve yalnız kalma.</p><b>Bu rehber profesyonel desteğin yerine geçmez.</b>
             </> : supportMode === "money" ? <>
-              <small>RIZIK–GÜVEN KAPISI · KUREYŞ 106:4</small><h3>Korkudan emniyete, darlıktan plana.</h3><p>“Onları açlıktan doyuran ve korkudan emin kılan…” Mana motoru kıtlık korkusunu görünür kılar; Talâk 65:2–3 çıkış yolu ve beklenmedik imkân ihtimalini hatırlatır.</p><div className="frequency-line"><span>Yeni mana</span><b>Rızık yalnız para değil; güven, ilişki ve imkân ağıdır</b><span>Mikro adım</span><b>Bugün tek gideri ve tek gelir ihtimalini yaz</b></div>
+              <small>RIZIK–GÜVEN KAPISI · KUREYŞ 106:4</small><h3>Korkudan emniyete, darlıktan plana.</h3><p>“Onları açlıktan doyuran ve korkudan emin kılan…” Bu okuma kıtlık korkusunu görünür kılar; Talâk 65:2–3 çıkış yolu ve beklenmedik imkân ihtimalini hatırlatır.</p><div className="frequency-line"><span>Yeni mana</span><b>Rızık yalnız para değil; güven, ilişki ve imkân ağıdır</b><span>Mikro adım</span><b>Bugün tek gideri ve tek gelir ihtimalini yaz</b></div>
             </> : supportMode === "love" ? <>
               <small>YASIN İZİN KAPISI · YÛSUF 12:86</small><h3>Acıyı inkâr etmeden akışa bırak.</h3><p>“Ben kederimi ve hüznümü yalnız Allah’a arz ederim.” Motor, bağı zorla koparmak yerine kaybı adlandırır; sevginin kişide kalan özünü beklentiden ayırır.</p><div className="frequency-line"><span>Yeni mana</span><b>Kaybedilen kişi olabilir; sevme yetisi sende kalır</b><span>Mikro adım</span><b>Gönderilmeyecek bir veda mektubu yaz</b></div>
             </> : supportMode === "work" ? <>
@@ -396,7 +392,7 @@ export default function Home() {
           <p className="state-safety">Bu araç teşhis veya tedavi vermez. Düşük ruh hâli iki haftadan uzun sürüyor ya da günlük yaşamını etkiliyorsa bir ruh sağlığı uzmanıyla görüş.</p>
         </section>
         {!hasDeepAnalysis ? <section className="pending-analysis">
-          <span className="eyebrow">BELGEYE DAYALI İNCELEME</span><h3>Bu âyet için yorum gösterilmiyor</h3><p>Sitede hazır AI yorumu kullanılmaz. Arapça metin korunur; açıklama yalnız Word belgelerinizden gerçekten işlenmiş, âyete özel içerik bulunduğunda açılır.</p><div><b>1</b> Arapça metin <i>→</i><b>2</b> Belge kaydı <i>→</i><b>3</b> Âyete özel içerik</div>
+          <span className="eyebrow">BELGEYE DAYALI İNCELEME</span><h3>Bu âyet için yorum gösterilmiyor</h3><p>Arapça metin korunur; açıklama yalnız Word belgelerinizden gerçekten işlenmiş, âyete özel içerik bulunduğunda açılır.</p><div><b>1</b> Arapça metin <i>→</i><b>2</b> Belge kaydı <i>→</i><b>3</b> Âyete özel içerik</div>
         </section> : <>
         <div className="layer-tabs" role="tablist">
           {activeLayers.map((item) => <button key={item.id} role="tab" aria-selected={activeLayer === item.id} className={activeLayer === item.id ? "active" : ""} onClick={() => setActiveLayer(item.id)}>{item.label}</button>)}
@@ -422,12 +418,12 @@ export default function Home() {
             <small>MANA HİPOTEZİ</small>
             <p>{lens.answer}</p>
           </div>)}
-          <div className="mana-spiral" aria-label="Mana motoru akışı">
+          <div className="mana-spiral" aria-label="Mana inceleme akışı">
             <span><b>01</b> Kapıyı aç</span><i>→</i><span><b>02</b> Çekirdeğe in</span><i>→</i><span><b>03</b> Aynayı gör</span><i>→</i><span><b>04</b> Akışı kur</span><i>→</i><span><b>05</b> Mühürle</span>
           </div>
           <div className="secret-engine">
             <div className="secret-engine-title"><small>AKILLI SIR MOTORU · 8 KATMAN</small><b>Sayıdan satırarasına</b></div>
-            <div className="secret-nav" role="tablist" aria-label="Sır motoru katmanları">
+            <div className="secret-nav" role="tablist" aria-label="Sır inceleme katmanları">
               {secretLayers.map((item) => <button key={item.id} role="tab" aria-selected={secretLayer === item.id} className={secretLayer === item.id ? "active" : ""} onClick={() => setSecretLayer(item.id)}><span>{item.icon}</span>{item.name}</button>)}
             </div>
             {secretLayers.filter((item) => item.id === secretLayer).map((item) => <div className="secret-result" key={item.id}>
@@ -437,12 +433,12 @@ export default function Home() {
                 <div className="keeper-finder-head"><small>GÖREVLİ İZİ MOTORU</small><b>{selected === 0 ? "Besmele" : "Sâffât 37:1"} · işaretli rol haritası</b></div>
                 <div className="keeper-verse" dir="rtl">{(selected === 0 ? besmeleKeepers : saffatKeepers).map((keeper) => <mark key={keeper.word}>{keeper.word}</mark>)}</div>
                 <div className="keeper-list">{(selected === 0 ? besmeleKeepers : saffatKeepers).map((keeper, index) => <div key={keeper.word}><span>{String(index + 1).padStart(2, "0")}</span><div><small>{keeper.word} · {keeper.root}</small><b>{keeper.name}</b><p>{keeper.role}</p><em>{keeper.confidence}</em></div></div>)}</div>
-                <p className="keeper-rule">İsimler metinde yazılı özel varlık adları değildir; AI’ın dilsel işlevlerden türettiği sembolik görev etiketleridir.</p>
+                <p className="keeper-rule">İsimler metinde yazılı özel varlık adları değildir; dilsel işlevlerden türetilmiş sembolik görev etiketleridir.</p>
               </div>}
             </div>)}
           </div>
           <div className="engine-principles"><span>Kalp merkezli</span><span>Spiral okuma</span><span>Özgür irade</span><span>Sevgi dili</span></div>
-          <p className="engine-disclaimer">Belge dilinizden türetilen bu motor, âyeti lafzî anlamın yerine geçmeden sembolik bir “mana kapısı” olarak açar. Frekans, enerji, çekirdek ve mühür kavramları burada manevi metaforlardır; kesin bilgi, dinî hüküm veya sağlık iddiası değildir.</p>
+          <p className="engine-disclaimer">Belge dilinizden türetilen bu okuma, âyeti lafzî anlamın yerine geçmeden sembolik bir “mana kapısı” olarak açar. Frekans, enerji, çekirdek ve mühür kavramları burada manevi metaforlardır; kesin bilgi, dinî hüküm veya sağlık iddiası değildir.</p>
         </section>}
         <div className="reflection glass">
           <div className="reflection-title"><span>◉</span><div><small>ŞİMDİ & BURADA</small><b>İç gözlem</b></div></div>
