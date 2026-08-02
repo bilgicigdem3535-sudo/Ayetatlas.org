@@ -119,6 +119,8 @@ type BlogPost = {
   createdAt: number;
 };
 
+type QuranVerse = { key: string; text: string; loading: boolean; error?: string };
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
@@ -143,6 +145,7 @@ export default function Home() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [blogLoading, setBlogLoading] = useState(false);
   const [blogMessage, setBlogMessage] = useState("");
+  const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", loading: false });
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
@@ -155,6 +158,18 @@ export default function Home() {
   const listenFiltered = useMemo(() => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(listenQuery.toLocaleLowerCase("tr"))), [listenQuery]);
   const listeningSurah = surahs.find((s) => s.no === listenSurah) ?? surahs[0];
   const fullSurahAudio = `https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/${String(listenSurah).padStart(3, "0")}.mp3`;
+  const loadQuranVerse = async (surahNo: number, ayahNo: number) => {
+    const key = `${surahNo}:${ayahNo}`;
+    setQuranVerse({ key, text: "", loading: true });
+    try {
+      const response = await fetch(`/api/quran/${surahNo}/${ayahNo}`);
+      const data = await response.json() as { text?: string; error?: string };
+      if (!response.ok || !data.text) throw new Error(data.error || "Âyet metni alınamadı.");
+      setQuranVerse({ key, text: data.text, loading: false });
+    } catch {
+      setQuranVerse({ key, text: "", loading: false, error: "Arapça mushaf metni şu anda yüklenemedi." });
+    }
+  };
   const loadBlogPosts = async () => {
     setBlogLoading(true);
     try {
@@ -209,8 +224,12 @@ export default function Home() {
     localStorage.setItem(`ayet-atlasi-note-${selected}-1`, reflectionNote.trim());
     setFeedback("Tefekkür notu bu cihazda saklandı");
   };
-  const chooseSurah = (no: number) => { setSelected(no); setCurrentVerse(1); setNavOpen(false); setActiveLayer("lafiz"); };
-  const goVerse = (direction: -1 | 1) => setCurrentVerse((verse) => Math.min(selectedSurah.count, Math.max(1, verse + direction)));
+  const chooseSurah = (no: number) => { setSelected(no); setCurrentVerse(1); setNavOpen(false); setActiveLayer("lafiz"); if (no > 0) void loadQuranVerse(no, 1); };
+  const goVerse = (direction: -1 | 1) => {
+    const nextVerse = Math.min(selectedSurah.count, Math.max(1, currentVerse + direction));
+    setCurrentVerse(nextVerse);
+    if (selected > 0) void loadQuranVerse(selected, nextVerse);
+  };
 
   return (
     <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}`}>
@@ -319,14 +338,24 @@ export default function Home() {
           <div className="besmele-stats"><span><b>4</b> kelime</span><span><b>19</b> harf</span><span><b>5</b> ana kapı</span><span><b>7</b> sembolik kat</span></div>
           <div className="besmele-flow"><span><b>Bâ–Nokta</b>Başlatan tohum</span><i>→</i><span><b>İsim</b>Niyeti tanımla</span><i>→</i><span><b>Allah</b>Kalp çekirdeği</span><i>→</i><span><b>Rahmân</b>Kuşatan rahmet</span><i>→</i><span><b>Rahîm</b>Tohumu eyleme doğur</span></div>
           <div className="besmele-note"><b>Belgeden çıkan ana mana</b><p>Besmele yalnız bir başlangıç cümlesi değil; zihin → kalp → eylem hattını hizalayan sembolik bir köprüdür. Üst akış “inâyet”, alt akış “niyet” olarak okunur; görevliler bağımsız varlıklar değil, Başlat · Tanımla · Birleştir · Kapsa · Doğur işlevleridir.</p></div>
-        </article> : <article className="coverage-card glass">
+        </article> : <div className="verse-and-coverage">
+          <article className="quran-script-card glass">
+            <div className="calligraphy-crown" aria-hidden="true"><i></i><span>۞</span><i></i></div>
+            <span className="eyebrow">MUSHAF METNİ · OSMANÎ YAZIM</span>
+            <div className="quran-verse-number"><span>{selectedSurah.name}</span><b>{currentVerse}</b></div>
+            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <p className="quran-arabic-calligraphy" lang="ar" dir="rtl">{quranVerse.text}</p> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
+            <div className="calligraphy-foot" aria-hidden="true">◇ ─── ✦ ─── ◇</div>
+            <small className="quran-text-source">Doğrulanmış Osmanî Arapça metin · Al Quran Cloud</small>
+          </article>
+          <article className="coverage-card glass">
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
           <span className="eyebrow">114 SÛRELİK İNCELEME KATALOĞU</span>
           <h2>{selectedSurah.name} {currentVerse}. âyet · çalışma durumu</h2>
           {selectedFingerprint ? <><p>Word belgelerinde bu sûreye ait özgün iz bulundu: “{selectedFingerprint.core}”. {currentVerse}. âyetin derin içeriği henüz yayın onayından geçmedi; başka âyetin metni burada gösterilmeyecek.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu âyet için derin analiz henüz üretilmedi. Özgünlük kilidi nedeniyle başka âyetlerin açıklaması burada tekrar edilmeyecek.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
           <div className="uniqueness-lock"><span>✓</span><div><b>Özgünlük Kilidi</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlikte yayın reddedilir.</small></div></div>
-          <button onClick={() => chooseSurah(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
-        </article>}
+            <button onClick={() => chooseSurah(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
+          </article>
+        </div>}
 
         {selected === 37 && currentVerse === 1 && <section className="word-section" id="word-atlas">
           <div className="section-title"><span>KELİME ATLASI</span><small>Bir kelimeye dokunarak kök katmanını aç</small></div>
