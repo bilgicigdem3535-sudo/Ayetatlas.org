@@ -154,6 +154,21 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .mana-spiral span { font-size: 6px; color: var(--green-deep); white-space: nowrap; }
 .mana-spiral b { color: var(--gold); font: 6px var(--font-geist-mono); }
 .mana-spiral i { color: rgba(197,154,71,.7); font-style: normal; font-size: 8px; }
+.secret-engine { margin-top: 13px; padding-top: 13px; border-top: 1px solid rgba(197,154,71,.17); }
+.secret-engine-title { text-align: center; }
+.secret-engine-title small, .secret-engine-title b { display: block; }
+.secret-engine-title small { font-size: 6px; letter-spacing: 1.2px; color: var(--gold); font-weight: 800; }
+.secret-engine-title b { font: 14px Georgia, serif; margin-top: 3px; }
+.secret-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 11px 0; }
+.secret-nav button { min-height: 45px; padding: 5px 2px; border: 1px solid transparent; border-radius: 9px; background: rgba(255,255,255,.43); color: var(--muted); font-size: 6px; line-height: 1.2; cursor: pointer; }
+.secret-nav button span { display: block; color: var(--green); font: 12px Georgia, serif; margin-bottom: 3px; }
+.secret-nav button.active { color: var(--green-deep); border-color: rgba(11,107,81,.12); background: white; box-shadow: 0 5px 14px rgba(30,70,50,.06); }
+.secret-result { min-height: 174px; padding: 15px; border-radius: 14px; background: linear-gradient(145deg, rgba(8,67,51,.94), rgba(11,107,81,.9)); color: white; animation: rise .3s ease; position: relative; overflow: hidden; }
+.secret-result::after { content: "∞"; position: absolute; right: -5px; bottom: -35px; color: rgba(255,255,255,.05); font: 110px Georgia, serif; }
+.secret-result small { color: #d6ba78; font-size: 6px; font-weight: 800; letter-spacing: 1.1px; }
+.secret-result h5 { font: 16px Georgia, serif; margin: 6px 0 8px; }
+.secret-result p { position: relative; z-index: 1; color: rgba(255,255,255,.78); font-size: 9px; line-height: 1.6; margin: 0 0 11px; }
+.secret-result code { display: block; position: relative; z-index: 1; padding: 8px; border-radius: 8px; background: rgba(0,0,0,.14); color: #f0d79e; font: 8px/1.4 var(--font-geist-mono); white-space: normal; }
 .scrim { display: none; }
 
 @media (max-width: 1120px) {

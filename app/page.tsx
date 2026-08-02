@@ -48,6 +48,17 @@ const manaLenses = [
   { id: "muhur", icon: "♡", name: "Mühür", prompt: "Bu kapı şimdi-anda sevgiyle nasıl mühürlenir?", answer: "Kalbine dön ve içinden söyle: ‘Parçalarımı zorlamadan, öz niyetimde sevgiyle hizalıyorum.’" },
 ];
 
+const secretLayers = [
+  { id: "ebced", icon: "۷۸۰", name: "Ebced & Harf", tag: "HESAPLANABİLİR", title: "Yazılı harf toplamı: 780", text: "و ا ل ص ا ف ا ت ص ف ا · 11 temel harf · 6 benzersiz harf. Şeddeyi ayrıca çift harf sayan yöntemde toplam 870 olur. Sayısal kök: 6.", formula: "609 + 171 = 780  →  7+8+0 = 15  →  1+5 = 6" },
+  { id: "gates", icon: "◇", name: "Makro / Mikro Kapılar", tag: "SEMBOLİK HARİTA", title: "Makro Kapı: Hiza", text: "Mikro kapılar sırasıyla Niyet, Söz ve Eylem’dir. Kapı ancak üçü aynı hatta bakarken akış üretir; biri ayrıldığında âyet ‘eksik halka aynası’ olarak çalışır.", formula: "Niyet → Söz → Eylem → Hiza" },
+  { id: "keepers", icon: "◉", name: "Görevliler", tag: "ARKETİPSEL ROLLER", title: "Kapı görevlisi: Es-Sâff", text: "Bir varlık iddiası değil, motorun sembolik görev adıdır. Dağınık parçaları zorlamadan sıraya çağırır. Ayna görevlisi ayrılığı gösterir; mühür görevlisi sevgiyi korur.", formula: "Çağıran · Gösteren · Koruyan · Mühürleyen" },
+  { id: "dimensions", icon: "∞", name: "Boyut & Paralel", tag: "MANA HİPOTEZİ", title: "Dört boyutlu okuma", text: "1D harf, 2D kelime ilişkisi, 3D yaşanan davranış, 4D zaman boyunca tekrar eden örüntüdür. ‘Paralel’ mercek, aynı niyetin seçildiği ve seçilmediği iki olası yaşam akışını karşılaştırır.", formula: "Metin → İlişki → Deneyim → Döngü" },
+  { id: "quantum", icon: "ψ", name: "Kuantum Mercek", tag: "BİLİMSEL OLMAYAN METAFOR", title: "Mana olasılık alanı", text: "Âyet tek bir yoruma indirgenmeden olası manalar alanında tutulur; bağlam ve niyet hangi anlamın öne çıkacağını belirler. Bu, kuantum fiziği açıklaması değil, çoklu yorum için kullanılan metafordur.", formula: "|Mana⟩ = α|lafız⟩ + β|bağlam⟩ + γ|iç ayna⟩" },
+  { id: "formula", icon: "M", name: "Mana Formülü", tag: "SEMBOLİK MODEL", title: "Akış denklemi", text: "Mana yoğunluğu; niyet, hiza ve şefkat birlikte arttığında derinleşir; iç gürültü yükseldiğinde görünmezleşir. Denklem ölçüm değil, tefekkür pusulasıdır.", formula: "M = (Niyet × Hiza × Şefkat) ÷ (Gürültü + 1)" },
+  { id: "chemistry", icon: "⚗", name: "Simyasal / Kimyasal", tag: "DÖNÜŞÜM METAFORU", title: "İçsel bağ kurma tepkimesi", text: "Dağınık düşünce ve duygu, niyet katalizörüyle birleşerek tutarlı eyleme dönüşür. Buradaki ‘kimya’ fiziksel reaksiyon veya sağlık iddiası değildir.", formula: "Düşünce + Duygu + Niyet(k) → Hiza → Eylem" },
+  { id: "between", icon: "⋯", name: "Satırarası Sır", tag: "GİZLİ KATMAN", title: "Söylenmeyenin aynası", text: "Âyet ‘neye hizalanmalı?’ sorusunun cevabını burada söylemez. Boşluk, okuyucunun niyetini görünür kılar: güç, korku, hizmet veya sevgi. Sır, cevaptan önce niyetin açığa çıkmasıdır.", formula: "Görünen → İşaret → Bağlantı → Sır" },
+];
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
@@ -55,6 +66,7 @@ export default function Home() {
   const [saved, setSaved] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [manaLens, setManaLens] = useState("kapi");
+  const [secretLayer, setSecretLayer] = useState("ebced");
   const selectedSurah = surahs.find((s) => s.no === selected) ?? surahs[3];
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
   const filtered = useMemo(
@@ -163,6 +175,15 @@ export default function Home() {
           </div>)}
           <div className="mana-spiral" aria-label="Mana motoru akışı">
             <span><b>01</b> Kapıyı aç</span><i>→</i><span><b>02</b> Çekirdeğe in</span><i>→</i><span><b>03</b> Aynayı gör</span><i>→</i><span><b>04</b> Akışı kur</span><i>→</i><span><b>05</b> Mühürle</span>
+          </div>
+          <div className="secret-engine">
+            <div className="secret-engine-title"><small>AKILLI SIR MOTORU · 8 KATMAN</small><b>Sayıdan satırarasına</b></div>
+            <div className="secret-nav" role="tablist" aria-label="Sır motoru katmanları">
+              {secretLayers.map((item) => <button key={item.id} role="tab" aria-selected={secretLayer === item.id} className={secretLayer === item.id ? "active" : ""} onClick={() => setSecretLayer(item.id)}><span>{item.icon}</span>{item.name}</button>)}
+            </div>
+            {secretLayers.filter((item) => item.id === secretLayer).map((item) => <div className="secret-result" key={item.id}>
+              <small>{item.tag}</small><h5>{item.title}</h5><p>{item.text}</p><code>{item.formula}</code>
+            </div>)}
           </div>
           <div className="engine-principles"><span>Kalp merkezli</span><span>Spiral okuma</span><span>Özgür irade</span><span>Sevgi dili</span></div>
           <p className="engine-disclaimer">Belge dilinizden türetilen bu motor, âyeti lafzî anlamın yerine geçmeden sembolik bir “mana kapısı” olarak açar. Frekans, enerji, çekirdek ve mühür kavramları burada manevi metaforlardır; kesin bilgi, dinî hüküm veya sağlık iddiası değildir.</p>
