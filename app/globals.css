@@ -236,6 +236,7 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .quran-verse-number { position: absolute; top: 24px; right: 25px; display: flex; align-items: center; gap: 7px; color: var(--green); font-size: 7px; }
 .quran-verse-number b { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid rgba(197,154,71,.52); border-radius: 50%; color: var(--gold); font: 10px Georgia,serif; }
 .quran-arabic-calligraphy { position: relative; max-width: 900px; margin: 27px auto 18px; color: #07533e; font: 48px/2.05 "Amiri Quran","KFGQPC Uthmanic Script HAFS","Traditional Arabic","Noto Naskh Arabic",serif; letter-spacing: normal; overflow-wrap: anywhere; filter: drop-shadow(0 2px 0 rgba(255,255,255,.8)); }
+.arabic,.besmele-arabic,.quran-arabic-calligraphy,.word-card strong,.keeper-verse { font-family: "Amiri Quran","KFGQPC Uthmanic Script HAFS","Noto Naskh Arabic","Traditional Arabic",serif; font-weight: 400; letter-spacing: normal; }
 .arabic-loading { margin: 68px 0; color: var(--muted); font: italic 13px Georgia,serif; }
 .calligraphy-foot { color: rgba(197,154,71,.74); font-size: 12px; letter-spacing: 3px; }
 .quran-text-source { display: block; margin-top: 8px; color: var(--muted); font-size: 6.5px; letter-spacing: .45px; }
