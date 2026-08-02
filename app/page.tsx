@@ -123,6 +123,9 @@ export default function Home() {
   const [engineOpen, setEngineOpen] = useState(false);
   const [currentVerse, setCurrentVerse] = useState(1);
   const [nightMode, setNightMode] = useState(false);
+  const [listenOpen, setListenOpen] = useState(false);
+  const [listenSurah, setListenSurah] = useState(1);
+  const [listenQuery, setListenQuery] = useState("");
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
@@ -132,6 +135,9 @@ export default function Home() {
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
     [query],
   );
+  const listenFiltered = useMemo(() => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(listenQuery.toLocaleLowerCase("tr"))), [listenQuery]);
+  const listeningSurah = surahs.find((s) => s.no === listenSurah) ?? surahs[0];
+  const fullSurahAudio = `https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee/${String(listenSurah).padStart(3, "0")}.mp3`;
   const runSupportEngine = () => {
     const value = supportInput.toLocaleLowerCase("tr");
     if (/intihar|ölmek ist|yaşamak istem|kendime zarar|canıma/.test(value)) setSupportMode("urgent");
@@ -159,7 +165,7 @@ export default function Home() {
   const goVerse = (direction: -1 | 1) => setCurrentVerse((verse) => Math.min(selectedSurah.count, Math.max(1, verse + direction)));
 
   return (
-    <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}`}>
+    <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}`}>
       <header className="topbar glass">
         <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label="Sûre menüsünü aç">☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
@@ -172,15 +178,16 @@ export default function Home() {
           <kbd>⌘ K</kbd>
         </label>
         <div className="header-actions">
-          <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setSupportOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
-          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => { setSupportOpen(!supportOpen); setEngineOpen(false); }}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
+          <button className={listenOpen ? "support-entry active" : "support-entry"} onClick={() => { setListenOpen(!listenOpen); setSupportOpen(false); setEngineOpen(false); }}><span>▶</span>{listenOpen ? "Atlas’a dön" : "Kur’an Dinle"}</button>
+          <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setSupportOpen(false); setListenOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
+          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => { setSupportOpen(!supportOpen); setEngineOpen(false); setListenOpen(false); }}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
           <button className="icon-button" onClick={() => setNightMode(!nightMode)} aria-pressed={nightMode} aria-label={nightMode ? "Aydınlık görünüme geç" : "Gece görünümüne geç"}>◐</button>
           <span className="profile" aria-label="Çiğdem profili">Ç</span>
         </div>
       </header>
 
       <aside className={`sidebar glass ${navOpen ? "open" : ""}`}>
-        <button className="side-support-entry" onClick={() => { setSupportOpen(true); setEngineOpen(false); setNavOpen(false); }}><span>♡</span><div><b>Hâlden Âyete</b><small>Hayat hâlleri için ayrı rehber alanı</small></div><i>→</i></button>
+        <button className="side-support-entry" onClick={() => { setSupportOpen(true); setEngineOpen(false); setListenOpen(false); setNavOpen(false); }}><span>♡</span><div><b>Hâlden Âyete</b><small>Hayat hâlleri için ayrı rehber alanı</small></div><i>→</i></button>
         <div className="side-heading"><span>SÛRELER</span><small>114</small></div>
         <div className="mini-search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre ara" /></div>
         <nav className="surah-list" aria-label="Sûreler">
@@ -202,7 +209,10 @@ export default function Home() {
       </aside>
 
       <section className="reader" id="top">
-        {engineOpen ? <section className="backstage">
+        {listenOpen ? <section className="listen-workspace">
+          <div className="listen-hero glass"><span className="eyebrow">BAĞIMSIZ KUR’AN DİNLEME ALANI</span><h1>Kur’an Dinle</h1><p>114 sûreyi tam sûre olarak dinleyin. Âyet incelemelerindeki tek âyet sesleri bu alandan bağımsız çalışmaya devam eder.</p><div className="listen-now"><span>{String(listenSurah).padStart(3,"0")}</span><div><small>ŞİMDİ SEÇİLİ</small><h2>{listeningSurah.name}</h2><p>{listeningSurah.count} âyet · Mishary Rashid Alafasy</p></div></div><audio key={fullSurahAudio} controls preload="metadata" src={fullSurahAudio}>Tarayıcınız ses oynatmayı desteklemiyor.</audio><small className="listen-source">Ücretsiz ses kaynağı: QuranicAudio.com</small></div>
+          <div className="listen-library glass"><div className="listen-library-head"><div><span className="eyebrow">SÛRE KÜTÜPHANESİ</span><h2>Dinlemek istediğiniz sûreyi seçin</h2></div><label><span>⌕</span><input value={listenQuery} onChange={(e) => setListenQuery(e.target.value)} placeholder="Sûre adı veya numarası" aria-label="Dinlenecek sûreyi ara" /></label></div><div className="listen-grid">{listenFiltered.map((surah) => <button key={surah.no} className={listenSurah === surah.no ? "active" : ""} onClick={() => setListenSurah(surah.no)}><span>{String(surah.no).padStart(3,"0")}</span><div><b>{surah.name}</b><small>{surah.count} âyet</small></div><i>{listenSurah === surah.no ? "♪" : "▶"}</i></button>)}</div></div>
+        </section> : engineOpen ? <section className="backstage">
           <div className="backstage-hero glass"><span className="eyebrow">BUZDAĞININ GÖRÜNMEYEN KISMI</span><h1>Atlas Omurgası</h1><p>Görünen her yorumun arkasında metni koruyan, delili izleyen, tekrarları reddeden ve sembolik dili doğru etikette tutan bir üretim sistemi çalışmalı.</p><div className="backstage-stats"><span><b>6</b> yayın kapısı</span><span><b>3</b> bilgi sınıfı</span><span><b>1</b> değişmez ilke: metne sadakat</span></div></div>
           <div className="pipeline-grid">{atlasPipeline.map((step) => <article className="pipeline-card" key={step.no}><span>{step.no}</span><small>{step.state}</small><h2>{step.name}</h2><p>{step.text}</p></article>)}</div>
           <div className="evidence-ledger glass"><div><span className="eyebrow">DELİL DEFTERİ</span><h2>Her cümlenin kimliği olacak</h2><p>Motorun asıl zekâsı daha çok yorum üretmek değil, her yorumun nereden geldiğini ve ne kadar kesin olduğunu görünür kılmaktır.</p></div><ul><li><b>Metinsel bilgi</b><span>Âyet, kelime, kök, gramer, bağlam</span></li><li><b>Aktarılan yorum</b><span>Kaynak ve görüş adıyla, doğrudan izlenebilir</span></li><li><b>Mana hipotezi</b><span>Belge diliyle üretilmiş sembolik tefekkür; kesin hüküm değil</span></li></ul></div>
@@ -256,7 +266,7 @@ export default function Home() {
         <p className="reading-position">{selectedSurah.name.toUpperCase()} · {currentVerse} / {selectedSurah.count}</p></>}
       </section>
 
-      <aside className={engineOpen ? "insight-panel engine-hidden" : "insight-panel"}>
+      <aside className={engineOpen || listenOpen ? "insight-panel engine-hidden" : "insight-panel"}>
         <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div></div>
         <section className="state-engine">
           <div className="state-engine-head"><span>♡</span><div><small>BAĞIMSIZ REHBER ALANI · HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>
