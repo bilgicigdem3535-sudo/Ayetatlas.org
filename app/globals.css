@@ -211,6 +211,21 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .number-matrix small { color: rgba(255,255,255,.63); font-size: 6px; letter-spacing: .7px; }
 .number-matrix b { color: #f0d79e; font: 19px Georgia, serif; margin: 2px 0; }
 .number-matrix span { color: rgba(255,255,255,.6); font-size: 6px; line-height: 1.35; }
+.keeper-finder { position: relative; z-index: 1; margin-top: 10px; }
+.keeper-finder-head small, .keeper-finder-head b { display: block; }
+.keeper-finder-head small { color: #d6ba78; font-size: 6px; letter-spacing: 1px; }
+.keeper-finder-head b { color: white; font: 12px Georgia, serif; margin-top: 2px; }
+.keeper-verse { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin: 10px 0; padding: 11px; border-radius: 10px; background: rgba(0,0,0,.13); }
+.keeper-verse mark { padding: 4px 7px; border-radius: 7px; background: rgba(240,215,158,.17); color: #f0d79e; font: 18px "Traditional Arabic", serif; border-bottom: 1px solid #d6ba78; }
+.keeper-list { display: grid; gap: 5px; }
+.keeper-list > div { display: grid; grid-template-columns: 22px 1fr; gap: 7px; padding: 8px; border-radius: 9px; text-align: left; background: rgba(255,255,255,.07); }
+.keeper-list > div > span { color: #d6ba78; font: 7px var(--font-geist-mono); }
+.keeper-list small, .keeper-list b, .keeper-list p, .keeper-list em { display: block; }
+.keeper-list small { color: rgba(255,255,255,.55); font-size: 6px; }
+.keeper-list b { color: white; font: 11px Georgia, serif; margin: 2px 0; }
+.keeper-list p { color: rgba(255,255,255,.68); font-size: 7px; line-height: 1.4; margin: 0 0 3px; }
+.keeper-list em { color: #d6ba78; font-size: 6px; font-style: normal; }
+.keeper-rule { margin: 8px 0 0 !important; color: rgba(255,255,255,.52) !important; font-size: 6px !important; text-align: center; }
 .scrim { display: none; }
 
 @media (max-width: 1120px) {

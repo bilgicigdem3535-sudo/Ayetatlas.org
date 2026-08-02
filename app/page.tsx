@@ -66,6 +66,19 @@ const numberSystems = [
   { name: "Gematria Merceği", value: "6", note: "Toplamın sayısal kökü; sembolik karşılaştırma" },
 ];
 
+const saffatKeepers = [
+  { word: "وَ", root: "bağlaç", name: "Eşik Bağlayıcısı", role: "Önceki mana ile yeni kapıyı birbirine bağlar; geçişi başlatır.", confidence: "Dilsel · yüksek" },
+  { word: "الصَّافَّاتِ", root: "ص ف ف", name: "Hizalayan", role: "Dağınık unsurları özlerini silmeden tek bir maksat hattında toplar.", confidence: "Kök + biçim · yüksek" },
+  { word: "صَفًّا", root: "ص ف ف", name: "Düzeni Mühürleyen", role: "Tekrar yoluyla hizanın geçici değil, belirgin ve kararlı olmasını vurgular.", confidence: "Tekrar + nahiv · yüksek" },
+];
+
+const besmeleKeepers = [
+  { word: "بِسْمِ", root: "س م و / و س م", name: "Başlatan–Adlandıran", role: "Eylemi isimsiz akıştan çıkarır; niyetin hangi merkez adına başladığını belirler.", confidence: "Yapı + mana · orta" },
+  { word: "اللَّهِ", root: "özel isim", name: "Merkezleyen", role: "Dağınık niyetleri tek kaynak ve tek yön fikrinde birleştirir.", confidence: "Mana işlevi · yüksek" },
+  { word: "الرَّحْمَنِ", root: "ر ح م", name: "Kuşatan", role: "Rahmeti ayrım yapmadan bütün alanı kapsayan makro kapı olarak açar.", confidence: "Kök + kalıp · yüksek" },
+  { word: "الرَّحِيمِ", root: "ر ح م", name: "İçte Büyüten", role: "Aynı rahmet kökünü süreklilik ve yakınlık içinde mikro alana taşır.", confidence: "Kök + kalıp · yüksek" },
+];
+
 export default function Home() {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
@@ -237,6 +250,12 @@ export default function Home() {
             {secretLayers.filter((item) => item.id === secretLayer).map((item) => <div className="secret-result" key={item.id}>
               <small>{item.tag}</small><h5>{item.title}</h5><p>{item.text}</p><code>{item.formula}</code>
               {item.id === "ebced" && <div className="number-matrix">{numberSystems.map((system) => <div key={system.name}><small>{system.name}</small><b>{system.value}</b><span>{system.note}</span></div>)}</div>}
+              {item.id === "keepers" && <div className="keeper-finder">
+                <div className="keeper-finder-head"><small>GÖREVLİ İZİ MOTORU</small><b>{selected === 0 ? "Besmele" : "Sâffât 37:1"} · işaretli rol haritası</b></div>
+                <div className="keeper-verse" dir="rtl">{(selected === 0 ? besmeleKeepers : saffatKeepers).map((keeper) => <mark key={keeper.word}>{keeper.word}</mark>)}</div>
+                <div className="keeper-list">{(selected === 0 ? besmeleKeepers : saffatKeepers).map((keeper, index) => <div key={keeper.word}><span>{String(index + 1).padStart(2, "0")}</span><div><small>{keeper.word} · {keeper.root}</small><b>{keeper.name}</b><p>{keeper.role}</p><em>{keeper.confidence}</em></div></div>)}</div>
+                <p className="keeper-rule">İsimler metinde yazılı özel varlık adları değildir; AI’ın dilsel işlevlerden türettiği sembolik görev etiketleridir.</p>
+              </div>}
             </div>)}
           </div>
           <div className="engine-principles"><span>Kalp merkezli</span><span>Spiral okuma</span><span>Özgür irade</span><span>Sevgi dili</span></div>
