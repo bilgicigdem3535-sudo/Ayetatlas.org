@@ -312,6 +312,7 @@ export default function Home() {
             <aside className="author-studio glass">
               <span className="eyebrow">YAZAR STÜDYOSU</span><h2>Yeni belge ekle</h2><p>Belge doğrudan sûre arşivine eklenir. Dergi gibi sayfa çevirerek yayınlamak için PDF önerilir; Word dosyası ise düzenleme kaynağı olarak saklanır ve önce PDF’ye dönüştürülür.</p>
               <form onSubmit={submitBlogPost}>
+                <input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
                 <label><span>Yazar adı</span><input name="authorName" maxLength={80} placeholder="Adınız" required /></label>
                 <label><span>Sûre</span><select name="surahNo" defaultValue="" required><option value="" disabled>Sûre seçin</option>{surahs.map((surah) => <option key={surah.no} value={surah.no}>{surah.no}. {surah.name}</option>)}</select></label>
                 <label><span>Yazı başlığı</span><input name="title" maxLength={160} placeholder="Çalışmanın özgün başlığı" required /></label>

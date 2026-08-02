@@ -15,7 +15,7 @@ interface Env {
 }
 
 const SECURITY_HEADERS: Record<string, string> = {
-  "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' https://download.quranicaudio.com https://verses.quran.foundation; connect-src 'self' https://api.alquran.cloud; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' https://download.quranicaudio.com https://verses.quran.foundation; connect-src 'self' https://api.alquran.cloud; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests",
   "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Resource-Policy": "same-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
@@ -25,15 +25,50 @@ const SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "DENY",
 };
 
-function withPlatformHeaders(response: Response, pathname: string): Response {
-  const secured = new Response(response.body, response);
+const TRUSTED_ORIGINS = new Set([
+  "https://ayetatlas.org",
+  "https://www.ayetatlas.org",
+  "https://ayet-atlasi.bilgicigdem3535.chatgpt.site",
+]);
+const RATE_LIMITS = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimit(request: Request, pathname: string): Response | undefined {
+  const isWrite = request.method !== "GET" && request.method !== "HEAD" && request.method !== "OPTIONS";
+  const limit = pathname === "/api/blog" && isWrite ? 5 : pathname.startsWith("/api/") ? 120 : 300;
+  const windowMs = pathname === "/api/blog" && isWrite ? 10 * 60_000 : 60_000;
+  const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+  const key = `${ip}:${request.method}:${pathname}`;
+  const now = Date.now();
+  const current = RATE_LIMITS.get(key);
+  const bucket = !current || current.resetAt <= now ? { count: 1, resetAt: now + windowMs } : { count: current.count + 1, resetAt: current.resetAt };
+  RATE_LIMITS.set(key, bucket);
+  if (RATE_LIMITS.size > 5000) for (const [storedKey, value] of RATE_LIMITS) if (value.resetAt <= now) RATE_LIMITS.delete(storedKey);
+  if (bucket.count <= limit) return undefined;
+  return Response.json({ error: "Çok fazla istek gönderildi. Lütfen biraz sonra yeniden deneyin." }, { status: 429, headers: { "Retry-After": String(Math.ceil((bucket.resetAt - now) / 1000)), "Cache-Control": "no-store" } });
+}
+
+function withPlatformHeaders(response: Response, pathname: string, request?: Request, nonce?: string): Response {
+  const contentType = response.headers.get("Content-Type") ?? "";
+  const transformed = nonce && contentType.includes("text/html")
+    ? new HTMLRewriter().on("script", { element(element) { element.setAttribute("nonce", nonce); } }).on("style", { element(element) { element.setAttribute("nonce", nonce); } }).transform(response)
+    : response;
+  const secured = new Response(transformed.body, transformed);
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) secured.headers.set(name, value);
+  if (nonce && contentType.includes("text/html")) {
+    secured.headers.set("Content-Security-Policy", SECURITY_HEADERS["Content-Security-Policy"].replace("script-src 'self'", `script-src 'nonce-${nonce}' 'strict-dynamic' 'self'`));
+  }
   if (/\.(?:css|js|woff2?|ttf|webp|png|jpe?g|svg)$/i.test(pathname)) {
     secured.headers.set("Cache-Control", "public, max-age=31536000, immutable");
   } else if (pathname.startsWith("/api/")) {
     secured.headers.set("Cache-Control", secured.headers.get("Cache-Control") ?? "no-store");
   }
   secured.headers.set("Server-Timing", "edge;desc=Cloudflare");
+  const origin = request?.headers.get("Origin");
+  if (origin && TRUSTED_ORIGINS.has(origin)) {
+    secured.headers.set("Access-Control-Allow-Origin", origin);
+    secured.headers.set("Access-Control-Allow-Credentials", "true");
+    secured.headers.append("Vary", "Origin");
+  }
   return secured;
 }
 
@@ -51,13 +86,22 @@ interface ExecutionContext {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))));
+
+    if (request.method === "OPTIONS") {
+      const origin = request.headers.get("Origin");
+      if (!origin || !TRUSTED_ORIGINS.has(origin)) return withPlatformHeaders(new Response(null, { status: 403 }), url.pathname, request);
+      return withPlatformHeaders(new Response(null, { status: 204, headers: { "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400" } }), url.pathname, request);
+    }
+    const limited = rateLimit(request, url.pathname);
+    if (limited) return withPlatformHeaders(limited, url.pathname, request);
 
     const normalizedPath = url.pathname.replace(/\/{2,}/g, "/").replace(/[A-Z]/g, (letter) => letter.toLowerCase());
     const withoutTrailingSlash = normalizedPath !== "/" && normalizedPath.endsWith("/") ? normalizedPath.slice(0, -1) : normalizedPath;
     if (url.hostname === "www.ayetatlas.org" || withoutTrailingSlash !== url.pathname) {
       url.hostname = url.hostname === "www.ayetatlas.org" ? "ayetatlas.org" : url.hostname;
       url.pathname = withoutTrailingSlash;
-      return withPlatformHeaders(Response.redirect(url, 308), url.pathname);
+      return withPlatformHeaders(Response.redirect(url, 308), url.pathname, request);
     }
 
     if (url.pathname === "/api/health") {
@@ -66,7 +110,7 @@ const worker = {
         service: "ayet-atlasi",
         edge: true,
         timestamp: new Date().toISOString(),
-      }, { headers: { "Cache-Control": "no-store" } }), url.pathname);
+      }, { headers: { "Cache-Control": "no-store" } }), url.pathname, request);
     }
 
     if (url.pathname === "/_vinext/image") {
@@ -78,14 +122,14 @@ const worker = {
           return result.response();
         },
       }, allowedWidths);
-      return withPlatformHeaders(imageResponse, url.pathname);
+      return withPlatformHeaders(imageResponse, url.pathname, request);
     }
 
     const routedRequest = url.pathname === "/" && url.searchParams.get("format") === "md"
       ? new Request(new URL("/page.md", request.url), request)
       : request;
     const response = await handler.fetch(routedRequest, env, ctx);
-    return withPlatformHeaders(response, url.pathname);
+    return withPlatformHeaders(response, url.pathname, request, nonce);
   },
 };
 

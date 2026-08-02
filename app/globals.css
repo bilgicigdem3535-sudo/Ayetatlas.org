@@ -552,3 +552,4 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .verse-page section h2 { font-family: Georgia,serif; margin: 0 0 10px; }
 .verse-page section p { line-height: 1.8; margin: 0; }
 .not-found { min-height: 70vh; display: grid; align-content: center; justify-items: start; gap: 12px; }
+.form-honeypot { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip-path: inset(50%) !important; opacity: 0 !important; pointer-events: none !important; }

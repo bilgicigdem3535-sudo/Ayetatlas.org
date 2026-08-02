@@ -42,6 +42,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const authenticatedUserId = request.headers.get("oai-authenticated-user-id");
+  if (!authenticatedUserId) return Response.json({ error: "Belge eklemek için güvenli oturum gereklidir." }, { status: 401 });
   const requestUrl = new URL(request.url);
   const origin = request.headers.get("Origin");
   if (origin && origin !== requestUrl.origin) {
@@ -53,12 +55,17 @@ export async function POST(request: Request) {
   }
   await ensureSchema();
   const form = await request.formData();
+  if (String(form.get("website") ?? "").trim()) return Response.json({ error: "İstek doğrulanamadı." }, { status: 400 });
   const file = form.get("file");
   const title = String(form.get("title") ?? "").trim();
   const excerpt = String(form.get("excerpt") ?? "").trim();
   const authorName = String(form.get("authorName") ?? "").trim() || "Yazar";
   const surahNo = Number(form.get("surahNo"));
   const surahName = String(form.get("surahName") ?? "").trim();
+
+  if (title.length > 160 || excerpt.length > 600 || authorName.length > 80 || surahName.length > 80) {
+    return Response.json({ error: "Metin alanlarından biri izin verilen uzunluğu aşıyor." }, { status: 400 });
+  }
 
   if (!(file instanceof File) || !title || !surahName || !Number.isInteger(surahNo) || surahNo < 1 || surahNo > 114) {
     return Response.json({ error: "Başlık, sûre ve belge zorunludur." }, { status: 400 });
@@ -70,12 +77,18 @@ export async function POST(request: Request) {
   if (file.size > MAX_FILE_SIZE) {
     return Response.json({ error: "Belge 10 MB sınırını aşıyor." }, { status: 413 });
   }
+  const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+  const isPdf = signature[0] === 0x25 && signature[1] === 0x50 && signature[2] === 0x44 && signature[3] === 0x46 && signature[4] === 0x2d;
+  const isDocx = signature[0] === 0x50 && signature[1] === 0x4b && signature[2] === 0x03 && signature[3] === 0x04;
+  if ((file.name.toLowerCase().endsWith(".pdf") && !isPdf) || (file.name.toLowerCase().endsWith(".docx") && !isDocx)) {
+    return Response.json({ error: "Belgenin içeriği dosya uzantısıyla uyuşmuyor." }, { status: 415 });
+  }
 
   const safeName = file.name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "belge";
   const fileKey = `blog/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
   await bindings.BLOG_FILES.put(fileKey, file.stream(), {
-    httpMetadata: { contentType: file.type || "application/octet-stream" },
-    customMetadata: { surahNo: String(surahNo), surahName, authorName },
+    httpMetadata: { contentType: file.type || "application/octet-stream", contentDisposition: `attachment; filename="${safeName}"` },
+    customMetadata: { surahNo: String(surahNo), surahName, authorName, uploadedBy: authenticatedUserId },
   });
 
   try {
