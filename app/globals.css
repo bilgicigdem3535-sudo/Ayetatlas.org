@@ -18,6 +18,10 @@ button, input, textarea { font: inherit; }
 button { color: inherit; }
 .glass { background: rgba(255, 255, 255, .66); backdrop-filter: blur(28px) saturate(150%); -webkit-backdrop-filter: blur(28px) saturate(150%); border: 1px solid rgba(255,255,255,.72); box-shadow: inset 0 1px rgba(255,255,255,.8); }
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 260px minmax(430px, 1fr) 390px; grid-template-rows: 78px 1fr; background: radial-gradient(circle at 63% 22%, rgba(218,239,227,.62), transparent 26%), linear-gradient(135deg, #f8f8f4, #eeefe9); }
+.app-shell.night-mode { --ink: #edf5f1; --muted: #a7b8b1; --line: rgba(224,240,233,.13); --paper: #0d1d18; background: radial-gradient(circle at 62% 18%,rgba(22,100,76,.32),transparent 28%),linear-gradient(135deg,#10251e,#081510); }
+.night-mode .glass,.night-mode .insight-panel { background-color: rgba(12,31,24,.78); border-color: rgba(230,245,238,.1); }
+.night-mode .global-search,.night-mode .mini-search,.night-mode .word-card,.night-mode .coverage-card,.night-mode .pipeline-card { background: rgba(255,255,255,.07); }
+.night-mode .sidebar { background-color: rgba(10,25,19,.82); }
 .reader, .insight-panel, .topbar, .global-search { min-width: 0; }
 .topbar { grid-column: 1 / -1; display: grid; grid-template-columns: 260px 1fr auto; align-items: center; position: sticky; top: 0; z-index: 20; border-width: 0 0 1px; border-color: var(--line); padding-right: 24px; }
 .brand { height: 100%; display: flex; gap: 12px; align-items: center; padding: 0 24px; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); }
@@ -33,7 +37,7 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .support-entry.active { color: white; background: var(--green); }
 .icon-button, .profile, .mobile-menu { border: 0; cursor: pointer; background: rgba(255,255,255,.68); box-shadow: 0 5px 18px rgba(20,40,30,.08); }
 .icon-button { width: 38px; height: 38px; border-radius: 13px; }
-.profile { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(145deg, #e6d5ab, #b78b40); color: white; font-weight: 700; }
+.profile { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(145deg, #e6d5ab, #b78b40); color: white; font-weight: 700; display: grid; place-items: center; }
 .mobile-menu { display: none; }
 
 .sidebar { grid-column: 1; grid-row: 2; position: sticky; top: 78px; height: calc(100vh - 78px); border-width: 0 1px 0 0; border-color: var(--line); padding: 22px 14px 18px; overflow: hidden; display: flex; flex-direction: column; z-index: 15; }

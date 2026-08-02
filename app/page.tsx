@@ -121,10 +121,12 @@ export default function Home() {
   const [reflectionNote, setReflectionNote] = useState("");
   const [feedback, setFeedback] = useState("");
   const [engineOpen, setEngineOpen] = useState(false);
+  const [currentVerse, setCurrentVerse] = useState(1);
+  const [nightMode, setNightMode] = useState(false);
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
-  const hasDeepAnalysis = selected === 0 || selected === 37;
+  const hasDeepAnalysis = selected === 0 || (selected === 37 && currentVerse === 1);
   const selectedFingerprint = analysisFingerprints[selected];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
@@ -153,9 +155,11 @@ export default function Home() {
     localStorage.setItem(`ayet-atlasi-note-${selected}-1`, reflectionNote.trim());
     setFeedback("Tefekkür notu bu cihazda saklandı");
   };
+  const chooseSurah = (no: number) => { setSelected(no); setCurrentVerse(1); setNavOpen(false); setActiveLayer("lafiz"); };
+  const goVerse = (direction: -1 | 1) => setCurrentVerse((verse) => Math.min(selectedSurah.count, Math.max(1, verse + direction)));
 
   return (
-    <main className={supportOpen ? "app-shell support-open" : "app-shell"}>
+    <main className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}`}>
       <header className="topbar glass">
         <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label="Sûre menüsünü aç">☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
@@ -169,22 +173,22 @@ export default function Home() {
         </label>
         <div className="header-actions">
           <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setSupportOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
-          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => setSupportOpen(!supportOpen)}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
-          <button className="icon-button" aria-label="Görünüm ayarları">◐</button>
-          <button className="profile" aria-label="Profil">Ç</button>
+          <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => { setSupportOpen(!supportOpen); setEngineOpen(false); }}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
+          <button className="icon-button" onClick={() => setNightMode(!nightMode)} aria-pressed={nightMode} aria-label={nightMode ? "Aydınlık görünüme geç" : "Gece görünümüne geç"}>◐</button>
+          <span className="profile" aria-label="Çiğdem profili">Ç</span>
         </div>
       </header>
 
       <aside className={`sidebar glass ${navOpen ? "open" : ""}`}>
-        <button className="side-support-entry" onClick={() => { setSupportOpen(true); setNavOpen(false); }}><span>♡</span><div><b>Hâlden Âyete</b><small>Hayat hâlleri için ayrı rehber alanı</small></div><i>→</i></button>
+        <button className="side-support-entry" onClick={() => { setSupportOpen(true); setEngineOpen(false); setNavOpen(false); }}><span>♡</span><div><b>Hâlden Âyete</b><small>Hayat hâlleri için ayrı rehber alanı</small></div><i>→</i></button>
         <div className="side-heading"><span>SÛRELER</span><small>114</small></div>
         <div className="mini-search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre ara" /></div>
         <nav className="surah-list" aria-label="Sûreler">
-          <button className={selected === 0 ? "surah special active" : "surah special"} onClick={() => { setSelected(0); setNavOpen(false); }}>
+          <button className={selected === 0 ? "surah special active" : "surah special"} onClick={() => chooseSurah(0)}>
             <span className="surah-no">ب</span><span className="surah-copy"><b>Besmele</b><small>4 kelime · 19 harf · Belge çalışması</small></span><span className="surah-dot"></span>
           </button>
           {filtered.map((surah) => (
-            <button key={surah.no} className={selected === surah.no ? "surah active" : "surah"} onClick={() => { setSelected(surah.no); setNavOpen(false); }}>
+            <button key={surah.no} className={selected === surah.no ? "surah active" : "surah"} onClick={() => chooseSurah(surah.no)}>
               <span className="surah-no">{String(surah.no).padStart(3, "0")}</span>
               <span className="surah-copy"><b>{surah.name}</b><small>{surah.count} âyet · {surah.mark}</small></span>
               <span className="surah-dot" title={surah.mark}></span>
@@ -209,10 +213,10 @@ export default function Home() {
             <span className="crumb">KUR’AN <i>›</i> {selectedSurah.name.toUpperCase()}</span>
             <h1>{selectedSurah.name} <em>{selectedSurah.no}</em></h1>
           </div>
-          <div className="verse-nav"><button disabled aria-label="Önceki âyet" title="Bu sürümde yalnız tamamlanmış örnek açık">‹</button><span>Âyet <b>1</b> / {selectedSurah.count}</span><button disabled aria-label="Sonraki âyet" title="Analiz tamamlandığında açılacak">›</button></div>
+          <div className="verse-nav"><button disabled={currentVerse === 1} onClick={() => goVerse(-1)} aria-label="Önceki âyet">‹</button><span>Âyet <b>{currentVerse}</b> / {selectedSurah.count}</span><button disabled={currentVerse === selectedSurah.count} onClick={() => goVerse(1)} aria-label="Sonraki âyet">›</button></div>
         </div>
 
-        {selected === 37 ? <article className="verse-card glass">
+        {selected === 37 && currentVerse === 1 ? <article className="verse-card glass">
           <div className="verse-orbit"><span>1</span></div>
           <button className={saved ? "save saved" : "save"} onClick={() => setSaved(!saved)} aria-label="Âyeti kaydet">{saved ? "◆" : "◇"}</button>
           <p className="arabic" lang="ar" dir="rtl">وَالصَّافَّاتِ صَفًّا</p>
@@ -234,13 +238,13 @@ export default function Home() {
         </article> : <article className="coverage-card glass">
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
           <span className="eyebrow">114 SÛRELİK İNCELEME KATALOĞU</span>
-          <h2>{selectedSurah.name} · çalışma durumu</h2>
-          {selectedFingerprint ? <><p>Word belgelerinde bu sûreye ait özgün iz bulundu: “{selectedFingerprint.core}”. Bu, bütün {selectedSurah.count} âyetin tamamlandığı anlamına gelmez; içerik âyet âyet doğrulanarak açılacak.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu sûre için derin analiz henüz üretilmedi. Özgünlük kilidi nedeniyle başka âyetlerin açıklaması burada tekrar edilmeyecek.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
+          <h2>{selectedSurah.name} {currentVerse}. âyet · çalışma durumu</h2>
+          {selectedFingerprint ? <><p>Word belgelerinde bu sûreye ait özgün iz bulundu: “{selectedFingerprint.core}”. {currentVerse}. âyetin derin içeriği henüz yayın onayından geçmedi; başka âyetin metni burada gösterilmeyecek.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu âyet için derin analiz henüz üretilmedi. Özgünlük kilidi nedeniyle başka âyetlerin açıklaması burada tekrar edilmeyecek.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
           <div className="uniqueness-lock"><span>✓</span><div><b>Özgünlük Kilidi</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlikte yayın reddedilir.</small></div></div>
-          <button onClick={() => setSelected(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
+          <button onClick={() => chooseSurah(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
         </article>}
 
-        {selected === 37 && <section className="word-section" id="word-atlas">
+        {selected === 37 && currentVerse === 1 && <section className="word-section" id="word-atlas">
           <div className="section-title"><span>KELİME ATLASI</span><small>Bir kelimeye dokunarak kök katmanını aç</small></div>
           <div className="word-grid">
             {words.map((word, i) => <button aria-pressed={selectedWord === i} className={selectedWord === i ? "word-card active" : "word-card"} onClick={() => setSelectedWord(i)} key={word.ar}><small>{String(i + 1).padStart(2, "0")}</small><strong lang="ar">{word.ar}</strong><b>{word.tr}</b><span>{word.note}</span></button>)}
@@ -249,11 +253,11 @@ export default function Home() {
         </section>}
 
         <div className="progress-track"><i></i></div>
-        <p className="reading-position">{selectedSurah.name.toUpperCase()} · 1 / {selectedSurah.count}</p></>}
+        <p className="reading-position">{selectedSurah.name.toUpperCase()} · {currentVerse} / {selectedSurah.count}</p></>}
       </section>
 
       <aside className={engineOpen ? "insight-panel engine-hidden" : "insight-panel"}>
-        <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div><button aria-label="Panel seçenekleri">•••</button></div>
+        <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div></div>
         <section className="state-engine">
           <div className="state-engine-head"><span>♡</span><div><small>BAĞIMSIZ REHBER ALANI · HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>
           <textarea value={supportInput} onChange={(e) => setSupportInput(e.target.value)} placeholder="Örn. Moralim bozuk, dalgınım, hiçbir şeye odaklanamıyorum…" aria-label="Ruh hâlini anlat"></textarea>
@@ -290,7 +294,7 @@ export default function Home() {
           <p>{layer.text}</p>
           <div className="quote-line"><i></i><p>“Hiza, benzer olmak değil; ayrı parçaların aynı hakikate yönelmesidir.”</p></div>
         </div>
-        {activeLayer === "hakikat" && selected === 37 && <section className="mana-engine">
+        {activeLayer === "hakikat" && selected === 37 && currentVerse === 1 && <section className="mana-engine">
           <div className="mana-engine-head">
             <div><span className="engine-pulse"></span><small>BELGE DNA’SI · MANA MOTORU</small><b>Kapıdan çekirdeğe derin iniş</b></div>
             <span className="engine-state">ŞİMDİ-AN AÇIK</span>
