@@ -34,6 +34,13 @@ const layers = [
   },
 ];
 
+const besmeleLayers = [
+  { id: "lafiz", label: "Lafız", eyebrow: "DÖRT KELİMELİK EŞİK", title: "Eylemi bir isim ve yön ile başlatmak", text: "Bâ harfiyle açılan yapı, eylemi başıboş bırakmaz; isim, kaynak ve iki rahmet niteliği aynı cümlede başlangıca yön verir." },
+  { id: "kok", label: "Kök & Dil", eyebrow: "س م و / و س م · ر ح م", title: "Adlandırmak ve rahmetle kuşatmak", text: "İsim alanı tanımlarken R-H-M kökü hem kuşatan hem süreklilik kazanan rahmet eksenini kurar. Aynı kökün iki kalıbı, kapsam ile yakınlığı ayırır." },
+  { id: "baglam", label: "Bağlam", eyebrow: "BAŞLANGIÇ FORMÜLÜ", title: "Okumadan eyleme ortak yön", text: "Belgedeki ana örgü Besmele’yi yalnız söylenen bir cümle değil, niyetin söz ve davranışa taşındığı çift yönlü bir köprü olarak ele alır." },
+  { id: "hakikat", label: "Hakikat-ötesi", eyebrow: "SEMBOLİK OKUMA", title: "İnâyet aşağı, niyet yukarı akar", text: "Belge dilinizde üst akış rahmet ve inâyeti, alt akış insanın niyet ve eylemini temsil eder. Bu bir tefekkür hipotezidir; kesin ontolojik açıklama değildir." },
+];
+
 const words = [
   { ar: "وَ", tr: "ve / andolsun", note: "Bağlar, akışı açar" },
   { ar: "الصَّافَّاتِ", tr: "saf saf dizilenler", note: "ص ف ف · düzen, sıra" },
@@ -101,8 +108,13 @@ export default function Home() {
   const [supportInput, setSupportInput] = useState("");
   const [supportMode, setSupportMode] = useState<"idle" | "low" | "focus" | "calm" | "money" | "love" | "work" | "urgent">("idle");
   const [supportOpen, setSupportOpen] = useState(false);
+  const [selectedWord, setSelectedWord] = useState(0);
+  const [reflectionNote, setReflectionNote] = useState("");
+  const [feedback, setFeedback] = useState("");
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
-  const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
+  const activeLayers = selected === 0 ? besmeleLayers : layers;
+  const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
+  const hasDeepAnalysis = selected === 0 || selected === 37;
   const selectedFingerprint = analysisFingerprints[selected];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
@@ -118,6 +130,19 @@ export default function Home() {
     else if (/kaygı|endişe|panik|korku|gergin/.test(value)) setSupportMode("calm");
     else setSupportMode("low");
   };
+  const shareVerse = async () => {
+    const text = "Sâffât 37:1 — Saf saf dizilenlere andolsun. · Âyet Atlası";
+    try {
+      if (navigator.share) await navigator.share({ title: "Âyet Atlası", text, url: window.location.href });
+      else await navigator.clipboard.writeText(`${text} ${window.location.href}`);
+      setFeedback(navigator.share ? "Paylaşım penceresi açıldı" : "Bağlantı kopyalandı");
+    } catch { setFeedback(""); }
+  };
+  const saveReflection = () => {
+    if (!reflectionNote.trim()) return;
+    localStorage.setItem(`ayet-atlasi-note-${selected}-1`, reflectionNote.trim());
+    setFeedback("Tefekkür notu bu cihazda saklandı");
+  };
 
   return (
     <main className={supportOpen ? "app-shell support-open" : "app-shell"}>
@@ -129,7 +154,7 @@ export default function Home() {
         </a>
         <label className="global-search">
           <span>⌕</span>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre, âyet, kelime veya kök ara…" aria-label="Kur'an içinde ara" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre adı veya numarası ara…" aria-label="Sûre ara" />
           <kbd>⌘ K</kbd>
         </label>
         <div className="header-actions">
@@ -167,7 +192,7 @@ export default function Home() {
             <span className="crumb">KUR’AN <i>›</i> {selectedSurah.name.toUpperCase()}</span>
             <h1>{selectedSurah.name} <em>{selectedSurah.no}</em></h1>
           </div>
-          <div className="verse-nav"><button aria-label="Önceki âyet">‹</button><span>Âyet <b>1</b> / {selectedSurah.count}</span><button aria-label="Sonraki âyet">›</button></div>
+          <div className="verse-nav"><button disabled aria-label="Önceki âyet" title="Bu sürümde yalnız tamamlanmış örnek açık">‹</button><span>Âyet <b>1</b> / {selectedSurah.count}</span><button disabled aria-label="Sonraki âyet" title="Analiz tamamlandığında açılacak">›</button></div>
         </div>
 
         {selected === 37 ? <article className="verse-card glass">
@@ -176,7 +201,7 @@ export default function Home() {
           <p className="arabic" lang="ar" dir="rtl">وَالصَّافَّاتِ صَفًّا</p>
           <p className="transliteration">Ve’s-sâffâti saffâ</p>
           <div className="translation"><span>ANLAM</span><p>Saf saf dizilenlere andolsun.</p></div>
-          <div className="verse-tools"><button>◌ <span>Kelime kelime</span></button><button>↗ <span>Paylaş</span></button></div>
+          <div className="verse-tools"><button onClick={() => document.getElementById("word-atlas")?.scrollIntoView({ behavior: "smooth" })}>◌ <span>Kelime kelime</span></button><button onClick={shareVerse}>↗ <span>Paylaş</span></button></div>
           <div className="recitation-player">
             <div className="recitation-meta"><span>▶</span><div><small>ÜCRETSİZ ÂYET SESİ</small><b>Mishary Rashid Alafasy · Sâffât 37:1</b></div></div>
             <audio controls preload="none" src="https://verses.quran.foundation/Alafasy/mp3/037001.mp3">Tarayıcınız ses oynatmayı desteklemiyor.</audio>
@@ -191,18 +216,19 @@ export default function Home() {
           <div className="besmele-note"><b>Belgeden çıkan ana mana</b><p>Besmele yalnız bir başlangıç cümlesi değil; zihin → kalp → eylem hattını hizalayan sembolik bir köprüdür. Üst akış “inâyet”, alt akış “niyet” olarak okunur; görevliler bağımsız varlıklar değil, Başlat · Tanımla · Birleştir · Kapsa · Doğur işlevleridir.</p></div>
         </article> : <article className="coverage-card glass">
           <span className="coverage-no">{String(selectedSurah.no).padStart(3, "0")}</span>
-          <span className="eyebrow">114 SÛRELİK TAM ATLAS</span>
-          <h2>{selectedSurah.name} sûresi katalogda</h2>
-          {selectedFingerprint ? <><p>{selectedSurah.count} âyet, bu sûreye özgü “{selectedFingerprint.core}” çekirdeğiyle incelenecek. Başka sûreden hazır mana taşınmayacak.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu sûre için derin analiz henüz üretilmedi. Özgünlük kilidi nedeniyle başka âyetlerin açıklaması burada tekrar edilmeyecek.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
+          <span className="eyebrow">114 SÛRELİK İNCELEME KATALOĞU</span>
+          <h2>{selectedSurah.name} · çalışma durumu</h2>
+          {selectedFingerprint ? <><p>Word belgelerinde bu sûreye ait özgün iz bulundu: “{selectedFingerprint.core}”. Bu, bütün {selectedSurah.count} âyetin tamamlandığı anlamına gelmez; içerik âyet âyet doğrulanarak açılacak.</p><div className="coverage-flow">{selectedFingerprint.chain.split(" → ").map((step, i) => <span key={step}>{String(i + 1).padStart(2, "0")} · {step}</span>)}</div></> : <><p>Bu sûre için derin analiz henüz üretilmedi. Özgünlük kilidi nedeniyle başka âyetlerin açıklaması burada tekrar edilmeyecek.</p><div className="coverage-flow"><span>Lafız izi</span><i>→</i><span>Kök izi</span><i>→</i><span>Bağlam izi</span><i>→</i><span>Özgün hipotez</span></div></>}
           <div className="uniqueness-lock"><span>✓</span><div><b>Özgünlük Kilidi</b><small>Kök + gramer + komşu âyet + sûre görevi + mana hipotezi parmak izi karşılaştırılır. Yüksek benzerlikte yayın reddedilir.</small></div></div>
           <button onClick={() => setSelected(37)}>Tamamlanmış örneği aç · Sâffât 1</button>
         </article>}
 
-        {selected === 37 && <section className="word-section">
+        {selected === 37 && <section className="word-section" id="word-atlas">
           <div className="section-title"><span>KELİME ATLASI</span><small>Bir kelimeye dokunarak kök katmanını aç</small></div>
           <div className="word-grid">
-            {words.map((word, i) => <button className="word-card" key={word.ar}><small>{String(i + 1).padStart(2, "0")}</small><strong lang="ar">{word.ar}</strong><b>{word.tr}</b><span>{word.note}</span></button>)}
+            {words.map((word, i) => <button aria-pressed={selectedWord === i} className={selectedWord === i ? "word-card active" : "word-card"} onClick={() => setSelectedWord(i)} key={word.ar}><small>{String(i + 1).padStart(2, "0")}</small><strong lang="ar">{word.ar}</strong><b>{word.tr}</b><span>{word.note}</span></button>)}
           </div>
+          <div className="word-detail"><small>SEÇİLİ KELİME İZİ</small><b>{words[selectedWord].tr}</b><p>{words[selectedWord].note}. Bu kart dilsel işareti gösterir; sembolik mana ayrıca ve açık etiketle üretilir.</p></div>
         </section>}
 
         <div className="progress-track"><i></i></div>
@@ -235,8 +261,11 @@ export default function Home() {
           </div>}
           <p className="state-safety">Bu araç teşhis veya tedavi vermez. Düşük ruh hâli iki haftadan uzun sürüyor ya da günlük yaşamını etkiliyorsa bir ruh sağlığı uzmanıyla görüş.</p>
         </section>
+        {!hasDeepAnalysis ? <section className="pending-analysis">
+          <span className="eyebrow">YAYIN KORUMASI</span><h3>Bu sûre için ortak metin gösterilmiyor</h3><p>Sağ panel daha önce her sûre seçildiğinde Sâffât yorumunu tekrar ediyordu. Uyumsuzluk kaldırıldı. Panel ancak lafız, kök, bağlam ve belge izi o âyete özel olarak tamamlandığında açılacak.</p><div><b>1</b> Metni doğrula <i>→</i><b>2</b> Kök/gramer <i>→</i><b>3</b> Bağlam <i>→</i><b>4</b> Sembolik hipotez</div>
+        </section> : <>
         <div className="layer-tabs" role="tablist">
-          {layers.map((item) => <button key={item.id} role="tab" aria-selected={activeLayer === item.id} className={activeLayer === item.id ? "active" : ""} onClick={() => setActiveLayer(item.id)}>{item.label}</button>)}
+          {activeLayers.map((item) => <button key={item.id} role="tab" aria-selected={activeLayer === item.id} className={activeLayer === item.id ? "active" : ""} onClick={() => setActiveLayer(item.id)}>{item.label}</button>)}
         </div>
         <div className="layer-content" key={layer.id}>
           <span className="eyebrow">{layer.eyebrow}</span>
@@ -244,7 +273,7 @@ export default function Home() {
           <p>{layer.text}</p>
           <div className="quote-line"><i></i><p>“Hiza, benzer olmak değil; ayrı parçaların aynı hakikate yönelmesidir.”</p></div>
         </div>
-        {activeLayer === "hakikat" && <section className="mana-engine">
+        {activeLayer === "hakikat" && selected === 37 && <section className="mana-engine">
           <div className="mana-engine-head">
             <div><span className="engine-pulse"></span><small>BELGE DNA’SI · MANA MOTORU</small><b>Kapıdan çekirdeğe derin iniş</b></div>
             <span className="engine-state">ŞİMDİ-AN AÇIK</span>
@@ -283,13 +312,15 @@ export default function Home() {
         </section>}
         <div className="reflection glass">
           <div className="reflection-title"><span>◉</span><div><small>ŞİMDİ & BURADA</small><b>İç gözlem</b></div></div>
-          <p>Bugün düşüncem, sözüm ve eylemim hangi konuda aynı safta durmuyor?</p>
-          <textarea aria-label="Tefekkür notu" placeholder="İlk gelen cümleyi yargılamadan yaz…"></textarea>
-          <button className="note-button">Notlarıma ekle <span>＋</span></button>
+          <p>{selected === 0 ? "Bugün hangi eylemi daha berrak bir niyet ve merhametle başlatabilirim?" : "Bugün düşüncem, sözüm ve eylemim hangi konuda aynı safta durmuyor?"}</p>
+          <textarea value={reflectionNote} onChange={(e) => setReflectionNote(e.target.value)} aria-label="Tefekkür notu" placeholder="İlk gelen cümleyi yargılamadan yaz…"></textarea>
+          <button className="note-button" disabled={!reflectionNote.trim()} onClick={saveReflection}>Notlarıma ekle <span>＋</span></button>
         </div>
         <p className="method-note"><b>Yöntem notu</b> · Dil ve bağlam katmanları kaynaklandırılmalı; “hakikat-ötesi” bölümü ise sembolik/kişisel tefekkür olarak sunulur.</p>
-        <div className="quality-seal"><span>◎</span><div><b>Âyete Özgü Üretim</b><small>Genel metin kopyalama kapalı · benzerlik denetimi açık · delil izi zorunlu</small></div></div>
+        <div className="quality-seal"><span>◎</span><div><b>Âyete Özgü Üretim</b><small>Genel metin kopyalama kapalı · benzerlik denetimi açık · delil izi zorunlu</small></div></div></>}
       </aside>
+
+      {feedback && <button className="toast" onClick={() => setFeedback("")} aria-live="polite">{feedback} ×</button>}
 
       {navOpen && <button className="scrim" onClick={() => setNavOpen(false)} aria-label="Menüyü kapat" />}
     </main>
