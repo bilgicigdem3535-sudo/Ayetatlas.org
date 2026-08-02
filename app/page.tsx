@@ -74,12 +74,24 @@ export default function Home() {
   const [navOpen, setNavOpen] = useState(false);
   const [manaLens, setManaLens] = useState("kapi");
   const [secretLayer, setSecretLayer] = useState("ebced");
+  const [supportInput, setSupportInput] = useState("");
+  const [supportMode, setSupportMode] = useState<"idle" | "low" | "focus" | "calm" | "money" | "love" | "work" | "urgent">("idle");
   const selectedSurah = surahs.find((s) => s.no === selected) ?? surahs[3];
   const layer = layers.find((item) => item.id === activeLayer) ?? layers[0];
   const filtered = useMemo(
     () => surahs.filter((s) => `${s.name} ${s.no}`.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr"))),
     [query],
   );
+  const runSupportEngine = () => {
+    const value = supportInput.toLocaleLowerCase("tr");
+    if (/intihar|ölmek ist|yaşamak istem|kendime zarar|canıma/.test(value)) setSupportMode("urgent");
+    else if (/parasız|para yok|borç|maddi|geçinem|kıtlık|rızık/.test(value)) setSupportMode("money");
+    else if (/aşk acı|ayrıl|terk etti|kalbim kırık|özlüyorum|ilişki/.test(value)) setSupportMode("love");
+    else if (/iş bul|işsiz|kariyer|başvuru|mülakat|çalışam/.test(value)) setSupportMode("work");
+    else if (/dalgın|odak|unut|konsantre|zihin/.test(value)) setSupportMode("focus");
+    else if (/kaygı|endişe|panik|korku|gergin/.test(value)) setSupportMode("calm");
+    else setSupportMode("low");
+  };
 
   return (
     <main className="app-shell">
@@ -156,6 +168,30 @@ export default function Home() {
 
       <aside className="insight-panel">
         <div className="panel-head"><div><span>ÇOK KATMANLI İNCELEME</span><h2>Âyetin derinliği</h2></div><button aria-label="Panel seçenekleri">•••</button></div>
+        <section className="state-engine">
+          <div className="state-engine-head"><span>♡</span><div><small>HÂLDEN ÂYETE</small><b>Şu an içinde ne oluyor?</b></div></div>
+          <textarea value={supportInput} onChange={(e) => setSupportInput(e.target.value)} placeholder="Örn. Moralim bozuk, dalgınım, hiçbir şeye odaklanamıyorum…" aria-label="Ruh hâlini anlat"></textarea>
+          <div className="state-chips"><button onClick={() => setSupportInput("Moralim bozuk ve yalnız hissediyorum")}>Moral düşük</button><button onClick={() => setSupportInput("Dalgınım, odaklanamıyorum")}>Dalgınlık</button><button onClick={() => setSupportInput("Kaygılı ve gerginim")}>Kaygı</button><button onClick={() => setSupportInput("Parasızım, borçlarım yüzünden korkuyorum")}>Parasızlık</button><button onClick={() => setSupportInput("Ayrıldık, aşk acısı çekiyorum")}>Aşk acısı</button><button onClick={() => setSupportInput("Uzun süredir iş bulamıyorum")}>İş bulamama</button></div>
+          <button className="state-submit" disabled={!supportInput.trim()} onClick={runSupportEngine}>Mana kapısını bul <span>→</span></button>
+          {supportMode !== "idle" && <div className={`support-result ${supportMode}`}>
+            {supportMode === "urgent" ? <>
+              <small>ÖNCE GÜVENLİK</small><h3>Bu yükü tek başına taşıma.</h3><p>Şu anda kendine zarar verme ihtimalin varsa Türkiye’de 112’yi ara veya en yakın acil servise git. Mümkünse güvendiğin birine hemen haber ver ve yalnız kalma.</p><b>Âyet motoru profesyonel desteğin yerine geçmez.</b>
+            </> : supportMode === "money" ? <>
+              <small>RIZIK–GÜVEN KAPISI · KUREYŞ 106:4</small><h3>Korkudan emniyete, darlıktan plana.</h3><p>“Onları açlıktan doyuran ve korkudan emin kılan…” Mana motoru kıtlık korkusunu görünür kılar; Talâk 65:2–3 çıkış yolu ve beklenmedik imkân ihtimalini hatırlatır.</p><div className="frequency-line"><span>Yeni mana</span><b>Rızık yalnız para değil; güven, ilişki ve imkân ağıdır</b><span>Mikro adım</span><b>Bugün tek gideri ve tek gelir ihtimalini yaz</b></div>
+            </> : supportMode === "love" ? <>
+              <small>YASIN İZİN KAPISI · YÛSUF 12:86</small><h3>Acıyı inkâr etmeden akışa bırak.</h3><p>“Ben kederimi ve hüznümü yalnız Allah’a arz ederim.” Motor, bağı zorla koparmak yerine kaybı adlandırır; sevginin kişide kalan özünü beklentiden ayırır.</p><div className="frequency-line"><span>Yeni mana</span><b>Kaybedilen kişi olabilir; sevme yetisi sende kalır</b><span>Mikro adım</span><b>Gönderilmeyecek bir veda mektubu yaz</b></div>
+            </> : supportMode === "work" ? <>
+              <small>İHTİYAÇTAN EMEĞE KAPI · KASAS 28:24</small><h3>İhtiyacını söyle, sonra küçük kapıyı çal.</h3><p>“Rabbim, bana indireceğin her hayra muhtacım.” Necm 53:39 emek hattını ekler: insan için kendi gayretinden başkası yoktur.</p><div className="frequency-line"><span>Yeni mana</span><b>İş yalnız bulunan şey değil; ihtiyaç ile hizmetin kesişimidir</b><span>Mikro adım</span><b>Bir başvuruyu iyileştir ve bir kişiye ulaş</b></div>
+            </> : supportMode === "focus" ? <>
+              <small>ZİHİN TOPLAMA KAPISI · KEHF 18:24</small><h3>Unuttuğunda yeniden hatırla.</h3><p>“Unuttuğun zaman Rabbini an…” Dalgınlığı kusur değil, yeniden merkeze dönme işareti olarak okur.</p><div className="frequency-line"><span>Mana tonu</span><b>Hatırlama · Toparlanma</b><span>Ritim</span><b>1 yavaş okuma + 60 sn sessizlik</b></div>
+            </> : supportMode === "calm" ? <>
+              <small>SEKÎNE KAPISI · RA‘D 13:28</small><h3>Kalbe dönüş hattı.</h3><p>“Kalpler ancak Allah’ı anmakla huzur bulur.” Âyet, kaygıyı inkâr etmeden dikkati güvenli bir merkeze çağırır.</p><div className="frequency-line"><span>Mana tonu</span><b>Sükûnet · Güven</b><span>Ritim</span><b>Rahat gelirse 4 al / 6 ver × 6</b></div>
+            </> : <>
+              <small>TERK EDİLMEME KAPISI · DUHÂ 93:3</small><h3>Yalnız değilsin; bağ kopmadı.</h3><p>“Rabbin seni terk etmedi ve sana darılmadı.” Ardından İnşirâh 94:5–6, zorlukla beraber bulunan kolaylık ihtimalini açar.</p><div className="frequency-line"><span>Mana tonu</span><b>Şefkat · Umut · Bağ</b><span>Ritim</span><b>Yavaş sesle 3 okuma, sonra bir kişiye ulaş</b></div>
+            </>}
+          </div>}
+          <p className="state-safety">Bu araç teşhis veya tedavi vermez. Düşük ruh hâli iki haftadan uzun sürüyor ya da günlük yaşamını etkiliyorsa bir ruh sağlığı uzmanıyla görüş.</p>
+        </section>
         <div className="layer-tabs" role="tablist">
           {layers.map((item) => <button key={item.id} role="tab" aria-selected={activeLayer === item.id} className={activeLayer === item.id ? "active" : ""} onClick={() => setActiveLayer(item.id)}>{item.label}</button>)}
         </div>
