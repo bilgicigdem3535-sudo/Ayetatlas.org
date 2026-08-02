@@ -73,7 +73,10 @@ const worker = {
       return withPlatformHeaders(imageResponse, url.pathname);
     }
 
-    const response = await handler.fetch(request, env, ctx);
+    const routedRequest = url.pathname === "/" && url.searchParams.get("format") === "md"
+      ? new Request(new URL("/page.md", request.url), request)
+      : request;
+    const response = await handler.fetch(routedRequest, env, ctx);
     return withPlatformHeaders(response, url.pathname);
   },
 };

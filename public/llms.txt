@@ -12,3 +12,8 @@
 
 Canonical: https://ayetatlas.org/
 Health: https://ayetatlas.org/api/health
+Full index: https://ayetatlas.org/llms-full.txt
+Markdown: https://ayetatlas.org/page.md
+JSON content API: https://ayetatlas.org/api/content
+RAG chunks: https://ayetatlas.org/api/content/chunks
+RSS: https://ayetatlas.org/feed.xml

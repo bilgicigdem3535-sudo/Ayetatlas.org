@@ -39,3 +39,19 @@ Bu belge, altyapı maddelerini `aktif`, `kısmi`, `platform ayarı` ve `planland
 4. Bot ve kullanıcı trafiği için ayrı hız sınırları
 5. Gerçek kullanıcı performansı, hata oranı ve haricî kaynak sağlık ölçümleri
 6. Yedekleme, geri yükleme, felaket kurtarma ve içerik bütünlük testleri
+
+## AEO ve LLM okunabilirliği
+
+| Yetenek | Durum | Uç / kanıt |
+|---|---|---|
+| llms.txt | Aktif | `/llms.txt` |
+| llms-full.txt | Aktif | `/llms-full.txt` canlı korpus indeksi |
+| Temiz Markdown | Aktif | `/page.md` ve `/?format=md` |
+| JSON içerik API | Aktif | `/api/content` |
+| JSON-LD içerik grafı | Aktif | `/api/content?format=jsonld` |
+| RSS akışı | Aktif | `/feed.xml` |
+| RAG parça çıktısı | Hazır | `/api/content/chunks`; embedding henüz hesaplanmıyor |
+| Bot bazlı robots kuralları | Aktif | GPTBot, ClaudeBot ve PerplexityBot |
+| Dinamik sosyal kart | Aktif | `/opengraph-image` |
+| Entity bağlantısı | Kısmi | Kur’an varlığı Wikidata Q428 ile bağlı; yeni güvenilir varlıklar içerik geldikçe eklenecek |
+| Product / FAQ şeması | Uygulanmadı | Gerçek ürün veya SSS içeriği oluşmadan işaretlenmeyecek |
