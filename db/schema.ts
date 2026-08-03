@@ -36,3 +36,15 @@ export const outboxEvents = sqliteTable("outbox_events", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   processedAt: integer("processed_at", { mode: "timestamp" }),
 }, (table) => [index("idx_outbox_status_available").on(table.status, table.availableAt)]);
+
+export const auditLogs = sqliteTable("audit_logs", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
+  actorId: text("actor_id").notNull(),
+  action: text("action").notNull(),
+  resourceType: text("resource_type").notNull(),
+  resourceId: text("resource_id").notNull(),
+  traceId: text("trace_id").notNull(),
+  metadata: text("metadata").notNull().default("{}"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+}, (table) => [index("idx_audit_tenant_created").on(table.tenantId, table.createdAt)]);

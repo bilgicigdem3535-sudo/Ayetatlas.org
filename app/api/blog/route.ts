@@ -43,10 +43,11 @@ export async function POST(request: Request) {
   const fileKey = `blog/${TENANT_ID}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
   await bindings.BLOG_FILES.put(fileKey, file.stream(), { httpMetadata: { contentType: file.type || "application/octet-stream", contentDisposition: `attachment; filename="${safeName}"` }, customMetadata: { tenantId: TENANT_ID, surahNo: String(surahNo), surahName, authorName, uploadedBy: authenticatedUserId } });
   try {
-    const result = await insertPostAndEvent(bindings, { surahNo, surahName, title, excerpt, authorName, fileKey, fileName: file.name, fileType: file.type || "application/octet-stream", fileSize: file.size, uploadedBy: authenticatedUserId, idempotencyKey });
+    const result = await insertPostAndEvent(bindings, { surahNo, surahName, title, excerpt, authorName, fileKey, fileName: file.name, fileType: file.type || "application/octet-stream", fileSize: file.size, uploadedBy: authenticatedUserId, idempotencyKey, traceId });
     return Response.json({ ok: true, id: result.id, eventId: result.eventId }, { status: 201 });
   } catch (error) {
     await bindings.BLOG_FILES.delete(fileKey);
     throw error;
   }
 }
+  const traceId = request.headers.get("x-trace-id") ?? crypto.randomUUID().replaceAll("-", "");

@@ -85,32 +85,59 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const startedAt = performance.now();
     const url = new URL(request.url);
     const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))));
+    const traceId = request.headers.get("x-trace-id")?.replace(/[^a-f0-9]/gi, "").slice(0, 32) || crypto.randomUUID().replaceAll("-", "");
+    const traceparent = `00-${traceId.padEnd(32, "0")}-0000000000000001-01`;
+
+    const finalize = (response: Response) => {
+      const output = new Response(response.body, response);
+      const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;
+      output.headers.set("X-Trace-Id", traceId);
+      output.headers.set("Traceparent", traceparent);
+      output.headers.append("Server-Timing", `app;dur=${durationMs}`);
+      console.log(JSON.stringify({ timestamp: new Date().toISOString(), level: response.status >= 500 ? "error" : response.status >= 400 ? "warn" : "info", event: "http.request", service: "ayet-atlasi", traceId, method: request.method, path: url.pathname, status: response.status, durationMs, colo: request.cf?.colo ?? "local" }));
+      return output;
+    };
 
     if (request.method === "OPTIONS") {
       const origin = request.headers.get("Origin");
-      if (!origin || !TRUSTED_ORIGINS.has(origin)) return withPlatformHeaders(new Response(null, { status: 403 }), url.pathname, request);
-      return withPlatformHeaders(new Response(null, { status: 204, headers: { "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400" } }), url.pathname, request);
+      if (!origin || !TRUSTED_ORIGINS.has(origin)) return finalize(withPlatformHeaders(new Response(null, { status: 403 }), url.pathname, request));
+      return finalize(withPlatformHeaders(new Response(null, { status: 204, headers: { "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400" } }), url.pathname, request));
     }
     const limited = rateLimit(request, url.pathname);
-    if (limited) return withPlatformHeaders(limited, url.pathname, request);
+    if (limited) return finalize(withPlatformHeaders(limited, url.pathname, request));
 
     const normalizedPath = url.pathname.replace(/\/{2,}/g, "/").replace(/[A-Z]/g, (letter) => letter.toLowerCase());
     const withoutTrailingSlash = normalizedPath !== "/" && normalizedPath.endsWith("/") ? normalizedPath.slice(0, -1) : normalizedPath;
     if (url.hostname === "www.ayetatlas.org" || withoutTrailingSlash !== url.pathname) {
       url.hostname = url.hostname === "www.ayetatlas.org" ? "ayetatlas.org" : url.hostname;
       url.pathname = withoutTrailingSlash;
-      return withPlatformHeaders(Response.redirect(url, 308), url.pathname, request);
+      return finalize(withPlatformHeaders(Response.redirect(url, 308), url.pathname, request));
     }
 
     if (url.pathname === "/api/health") {
-      return withPlatformHeaders(Response.json({
+      return finalize(withPlatformHeaders(Response.json({
         status: "ok",
         service: "ayet-atlasi",
         edge: true,
         timestamp: new Date().toISOString(),
-      }, { headers: { "Cache-Control": "no-store" } }), url.pathname, request);
+      }, { headers: { "Cache-Control": "no-store" } }), url.pathname, request));
+    }
+
+    if (url.pathname === "/livez") return finalize(withPlatformHeaders(Response.json({ status: "alive", service: "ayet-atlasi" }), url.pathname, request));
+    if (url.pathname === "/readyz") {
+      const bindingsReady = Boolean(env.DB && env.ASSETS && env.IMAGES);
+      return finalize(withPlatformHeaders(Response.json({ status: bindingsReady ? "ready" : "not-ready", checks: { db: Boolean(env.DB), assets: Boolean(env.ASSETS), images: Boolean(env.IMAGES) } }, { status: bindingsReady ? 200 : 503 }), url.pathname, request));
+    }
+    if (url.pathname === "/healthz") {
+      try {
+        await env.DB.prepare("SELECT 1 AS ok").first();
+        return finalize(withPlatformHeaders(Response.json({ status: "healthy", checks: { edge: "ok", database: "ok" } }), url.pathname, request));
+      } catch {
+        return finalize(withPlatformHeaders(Response.json({ status: "unhealthy", checks: { edge: "ok", database: "failed" } }, { status: 503 }), url.pathname, request));
+      }
     }
 
     if (url.pathname === "/_vinext/image") {
@@ -122,14 +149,17 @@ const worker = {
           return result.response();
         },
       }, allowedWidths);
-      return withPlatformHeaders(imageResponse, url.pathname, request);
+      return finalize(withPlatformHeaders(imageResponse, url.pathname, request));
     }
 
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-trace-id", traceId);
+    requestHeaders.set("traceparent", traceparent);
     const routedRequest = url.pathname === "/" && url.searchParams.get("format") === "md"
-      ? new Request(new URL("/page.md", request.url), request)
-      : request;
+      ? new Request(new URL("/page.md", request.url), { method: request.method, headers: requestHeaders, body: request.body })
+      : new Request(request, { headers: requestHeaders });
     const response = await handler.fetch(routedRequest, env, ctx);
-    return withPlatformHeaders(response, url.pathname, request, nonce);
+    return finalize(withPlatformHeaders(response, url.pathname, request, nonce));
   },
 };
 

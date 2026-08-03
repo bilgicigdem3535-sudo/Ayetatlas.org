@@ -16,6 +16,7 @@ export async function findByIdempotencyKey(bindings: BlogBindings, key: string) 
 export async function insertPostAndEvent(bindings: BlogBindings, values: {
   surahNo: number; surahName: string; title: string; excerpt: string; authorName: string;
   fileKey: string; fileName: string; fileType: string; fileSize: number; uploadedBy: string; idempotencyKey: string;
+  traceId: string;
 }) {
   const createdAt = Date.now();
   const eventId = crypto.randomUUID();
@@ -27,6 +28,10 @@ export async function insertPostAndEvent(bindings: BlogBindings, values: {
     (id, tenant_id, event_type, aggregate_id, payload, status, attempts, available_at, created_at)
     VALUES (?, ?, 'blog.document.uploaded', ?, ?, 'pending', 0, ?, ?)`)
     .bind(eventId, TENANT_ID, values.idempotencyKey, JSON.stringify({ fileKey: values.fileKey, surahNo: values.surahNo }), createdAt, createdAt);
-  const results = await bindings.DB.batch([insert, outbox]);
+  const audit = bindings.DB.prepare(`INSERT INTO audit_logs
+    (id, tenant_id, actor_id, action, resource_type, resource_id, trace_id, metadata, created_at)
+    VALUES (?, ?, ?, 'blog.document.uploaded', 'blog_post', ?, ?, ?, ?)`)
+    .bind(crypto.randomUUID(), TENANT_ID, values.uploadedBy, values.idempotencyKey, values.traceId, JSON.stringify({ surahNo: values.surahNo, fileType: values.fileType, fileSize: values.fileSize }), createdAt);
+  const results = await bindings.DB.batch([insert, outbox, audit]);
   return { id: results[0].meta.last_row_id, eventId };
 }
