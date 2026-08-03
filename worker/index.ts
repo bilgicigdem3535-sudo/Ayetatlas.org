@@ -36,7 +36,7 @@ const RATE_LIMITS = new Map<string, { count: number; resetAt: number }>();
 const CANARY_HITS = new Map<string, { count: number; blockedUntil: number }>();
 const SINGLE_FLIGHTS = new Map<string, Promise<Response>>();
 const CANARY_PATH = "/api/internal/archive-index-7f3a9c";
-const RESILIENT_READ_PATHS = new Set(["/api/content", "/api/content/chunks", "/page.md", "/llms.txt", "/llms-full.txt"]);
+const RESILIENT_READ_PATHS = new Set(["/api/content", "/api/content/chunks", "/api/content/coverage", "/page.md", "/llms.txt", "/llms-full.txt"]);
 const SUPPORTED_LOCALES = new Set(["tr", "en", "de", "ar"]);
 const COUNTRY_LOCALES: Record<string, string> = { TR: "tr", DE: "de", AT: "de", CH: "de", SA: "ar", AE: "ar", EG: "ar", QA: "ar" };
 
