@@ -44,7 +44,7 @@
     "vitest": "4.0.18",
     "vinext": "0.0.50",
     "vite": "8.0.13",
-    "wait-on": "9.0.4",
+    "wait-on": "9.1.0",
     "wrangler": "4.92.0"
   },
   "type": "module"

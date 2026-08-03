@@ -80,8 +80,8 @@ importers:
         specifier: 4.0.18
         version: 4.0.18(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.23.1)
       wait-on:
-        specifier: 9.0.4
-        version: 9.0.4
+        specifier: 9.1.0
+        version: 9.1.0
       wrangler:
         specifier: 4.92.0
         version: 4.92.0
@@ -3856,8 +3856,8 @@ packages:
       jsdom:
         optional: true
 
-  wait-on@9.0.4:
-    resolution: {integrity: sha512-k8qrgfwrPVJXTeFY8tl6BxVHiclK11u72DVKhpybHfUL/K6KM4bdyK9EhIVYGytB5MJe/3lq4Tf0hrjM+pvJZQ==}
+  wait-on@9.1.0:
+    resolution: {integrity: sha512-PymrLXHLBM1Ju/Xspb2ADUhbPSMvbnuNvy/mN2hWtpbJ3da0h3Ky1LqwKPG5QSVR57liyO0iUpfipYl/s5qNvA==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -7448,7 +7448,7 @@ snapshots:
       - tsx
       - yaml
 
-  wait-on@9.0.4:
+  wait-on@9.1.0:
     dependencies:
       axios: 1.19.0
       joi: 18.2.3
