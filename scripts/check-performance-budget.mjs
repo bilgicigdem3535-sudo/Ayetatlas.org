@@ -2,7 +2,11 @@ import { readdirSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 const root = "dist/client/assets";
 const files = [];
-const walk = (dir) => readdirSync(dir).forEach((name) => { const path = join(dir, name); statSync(path).isDirectory() ? walk(path) : files.push(path); });
+const walk = (dir) => readdirSync(dir).forEach((name) => {
+  const path = join(dir, name);
+  if (statSync(path).isDirectory()) walk(path);
+  else files.push(path);
+});
 walk(root);
 const sizes = files.map((path) => ({ bytes: statSync(path).size, ext: extname(path) }));
 const js = sizes.filter((item) => item.ext === ".js");
