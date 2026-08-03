@@ -5,6 +5,8 @@ import handler from "vinext/server/app-router-entry";
 interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
+  DEGRADED_MODE?: string;
+  SHADOW_ORIGIN?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -32,7 +34,9 @@ const TRUSTED_ORIGINS = new Set([
 ]);
 const RATE_LIMITS = new Map<string, { count: number; resetAt: number }>();
 const CANARY_HITS = new Map<string, { count: number; blockedUntil: number }>();
+const SINGLE_FLIGHTS = new Map<string, Promise<Response>>();
 const CANARY_PATH = "/api/internal/archive-index-7f3a9c";
+const RESILIENT_READ_PATHS = new Set(["/api/content", "/api/content/chunks", "/page.md", "/llms.txt", "/llms-full.txt"]);
 
 type BotSignals = { score?: number; verifiedBot?: boolean; ja4?: string };
 
@@ -76,6 +80,7 @@ function withPlatformHeaders(response: Response, pathname: string, request?: Req
     secured.headers.set("Cache-Control", secured.headers.get("Cache-Control") ?? "no-store");
   }
   secured.headers.set("Server-Timing", "edge;desc=Cloudflare");
+  secured.headers.set("X-Content-Provenance", "https://ayetatlas.org/legal");
   const origin = request?.headers.get("Origin");
   if (origin && TRUSTED_ORIGINS.has(origin)) {
     secured.headers.set("Access-Control-Allow-Origin", origin);
@@ -190,14 +195,49 @@ const worker = {
       return finalize(withPlatformHeaders(imageResponse, url.pathname, request));
     }
 
+    if (env.DEGRADED_MODE === "1" && ["/api/analytics", "/api/telemetry", "/api/vitals"].includes(url.pathname)) {
+      return finalize(withPlatformHeaders(new Response(null, { status: 204, headers: { "X-Degraded-Mode": "active", "Cache-Control": "no-store" } }), url.pathname, request));
+    }
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-trace-id", traceId);
     requestHeaders.set("traceparent", traceparent);
     requestHeaders.set("x-experiment-reader", experimentVariant);
-    const routedRequest = url.pathname === "/" && url.searchParams.get("format") === "md"
+    const wantsMarkdown = request.headers.get("Accept")?.includes("text/markdown") ?? false;
+    const routedRequest = url.pathname === "/" && (url.searchParams.get("format") === "md" || wantsMarkdown)
       ? new Request(new URL("/page.md", request.url), { method: request.method, headers: requestHeaders, body: request.body })
       : new Request(request, { headers: requestHeaders });
-    const response = await handler.fetch(routedRequest, env, ctx);
+    const resilientRead = request.method === "GET" && RESILIENT_READ_PATHS.has(new URL(routedRequest.url).pathname);
+    const cacheKey = new Request(routedRequest.url, { method: "GET", headers: { Accept: request.headers.get("Accept") ?? "*/*" } });
+    let response: Response;
+    if (resilientRead) {
+      let flight = SINGLE_FLIGHTS.get(cacheKey.url);
+      if (!flight) {
+        flight = handler.fetch(routedRequest, env, ctx);
+        SINGLE_FLIGHTS.set(cacheKey.url, flight);
+        void flight.then(() => SINGLE_FLIGHTS.delete(cacheKey.url), () => SINGLE_FLIGHTS.delete(cacheKey.url));
+      }
+      try {
+        response = (await flight).clone();
+        if (response.ok) ctx.waitUntil(caches.default.put(cacheKey, response.clone()));
+        else {
+          const stale = await caches.default.match(cacheKey);
+          if (stale) response = new Response(stale.body, { status: 200, headers: stale.headers });
+        }
+      } catch {
+        const stale = await caches.default.match(cacheKey);
+        if (!stale) throw new Error("Resilient read failed without a cached response");
+        const staleHeaders = new Headers(stale.headers);
+        staleHeaders.set("Warning", '110 - "Response is stale"');
+        staleHeaders.set("X-Cache-Fallback", "stale-if-error");
+        response = new Response(stale.body, { status: 200, headers: staleHeaders });
+      }
+    } else response = await handler.fetch(routedRequest, env, ctx);
+
+    if (env.SHADOW_ORIGIN && request.method === "GET" && url.pathname === "/api/content" && Number.parseInt(traceId.slice(0, 2), 16) < 3) {
+      const shadowUrl = new URL("/api/content", env.SHADOW_ORIGIN);
+      ctx.waitUntil(fetch(shadowUrl, { headers: { "X-Shadow-Request": "1", "User-Agent": "Ayet-Atlasi-Shadow/1.0" } }).then(() => undefined).catch(() => undefined));
+    }
     return finalize(withPlatformHeaders(response, url.pathname, request, nonce));
   },
 };
