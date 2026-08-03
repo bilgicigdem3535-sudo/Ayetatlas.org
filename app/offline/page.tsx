@@ -1,0 +1,1 @@
+export default function OfflinePage() { return <main className="offline-page" id="main-content"><p>ÂYET ATLASI · ÇEVRİMDIŞI</p><h1>Bağlantı sessiz; okuma alanı korunuyor.</h1><p>Daha önce açtığınız sayfalar kullanılabilir. Bağlantı geldiğinde atlas kendiliğinden güncellenecektir.</p><a href="/">Yeniden dene</a></main>; }

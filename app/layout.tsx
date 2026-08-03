@@ -3,6 +3,8 @@ import { Amiri_Quran, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import WebVitals from "./web-vitals";
 import Analytics from "./analytics";
+import ConsentManager from "./consent-manager";
+import PwaRegister from "./pwa-register";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -30,5 +32,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       { "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", position: 1, name: "Âyet Atlası", item: "https://ayetatlas.org/" }] },
     ],
   };
-  return <html lang="tr"><head><link rel="preconnect" href="https://download.quranicaudio.com" crossOrigin="anonymous" /><link rel="dns-prefetch" href="https://verses.quran.foundation" /><style>{"html{background:#faf8f1}body{margin:0}.app-shell{min-height:100vh}"}</style></head><body className={`${geistSans.variable} ${geistMono.variable} ${amiriQuran.variable}`}><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />{children}<WebVitals /><Analytics /></body></html>;
+  void structuredData;
+  return <html lang="tr"><head><link rel="preconnect" href="https://download.quranicaudio.com" crossOrigin="anonymous" /><link rel="dns-prefetch" href="https://verses.quran.foundation" /><style>{"html{background:#faf8f1}body{margin:0}.app-shell{min-height:100vh}"}</style></head><body className={`${geistSans.variable} ${geistMono.variable} ${amiriQuran.variable}`}><a className="skip-link" href="#main-content">Ana içeriğe geç</a>{children}<WebVitals /><Analytics /><ConsentManager /><PwaRegister /></body></html>;
 }

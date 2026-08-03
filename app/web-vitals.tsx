@@ -6,6 +6,7 @@ type TelemetryEvent = { type: "metric" | "error" | "long-task"; name: string; va
 
 export default function WebVitals() {
   useEffect(() => {
+    if (!document.cookie.includes("consent_analytics=granted") || navigator.globalPrivacyControl) return;
     const sessionId = crypto.randomUUID();
     const events: TelemetryEvent[] = [];
     const observe = (type: string, callback: (entry: PerformanceEntry) => void) => {

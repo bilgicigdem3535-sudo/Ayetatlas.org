@@ -1,0 +1,40 @@
+name: Disaster recovery readiness drill
+
+on:
+  schedule:
+    - cron: "0 4 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify reproducible build and tests
+        run: pnpm ci
+      - name: Verify recovery artifacts
+        shell: bash
+        run: |
+          test -f docs/disaster-recovery.md
+          test -n "$(find migrations -maxdepth 1 -type f -name '*.sql' -print -quit)"
+          test -f wrangler.jsonc
+      - name: Create recovery bundle
+        run: tar --exclude=.git --exclude=node_modules --exclude=.next --exclude=dist -czf ayet-atlasi-recovery.tgz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-readiness-${{ github.run_id }}
+          path: ayet-atlasi-recovery.tgz
+          retention-days: 30
+

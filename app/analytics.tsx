@@ -5,7 +5,7 @@ const SESSION_KEY = "ayet-atlasi-analytics-session";
 const allowedEvents = new Set(["page_view", "surah_selected", "verse_navigated", "audio_played", "blog_opened", "document_upload_started", "support_opened", "atlas_engine_opened"]);
 
 export function trackProductEvent(eventName: string, properties: Record<string, string | number | boolean> = {}) {
-  if (!allowedEvents.has(eventName) || navigator.globalPrivacyControl) return;
+  if (!allowedEvents.has(eventName) || navigator.globalPrivacyControl || !document.cookie.includes("consent_analytics=granted")) return;
   let sessionId = sessionStorage.getItem(SESSION_KEY);
   if (!sessionId) { sessionId = crypto.randomUUID(); sessionStorage.setItem(SESSION_KEY, sessionId); }
   navigator.sendBeacon("/api/analytics", JSON.stringify({ sessionId, eventName, path: location.pathname, properties }));
@@ -14,6 +14,7 @@ export function trackProductEvent(eventName: string, properties: Record<string, 
 export default function Analytics() {
   useEffect(() => {
     trackProductEvent("page_view");
+    const onConsent = () => trackProductEvent("page_view");
     const onClick = (event: MouseEvent) => {
       const button = (event.target as Element | null)?.closest("button");
       if (!button) return;
@@ -26,8 +27,9 @@ export default function Analytics() {
     };
     const onPlay = () => trackProductEvent("audio_played");
     addEventListener("click", onClick);
+    addEventListener("ayet-consent-granted", onConsent);
     document.addEventListener("play", onPlay, true);
-    return () => { removeEventListener("click", onClick); document.removeEventListener("play", onPlay, true); };
+    return () => { removeEventListener("click", onClick); removeEventListener("ayet-consent-granted", onConsent); document.removeEventListener("play", onPlay, true); };
   }, []);
   return null;
 }

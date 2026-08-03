@@ -256,7 +256,7 @@ export default function Home() {
   };
 
   return (
-    <main data-text-level={textLevel} className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}${clarityMode ? " clarity-mode" : ""}`}>
+    <main id="main-content" data-text-level={textLevel} className={`${supportOpen ? "app-shell support-open" : "app-shell"}${nightMode ? " night-mode" : ""}${listenOpen ? " listen-open" : ""}${blogOpen ? " blog-open" : ""}${clarityMode ? " clarity-mode" : ""}`}>
       <header className="topbar glass">
         <button className="mobile-menu" onClick={() => setNavOpen(!navOpen)} aria-label={navOpen ? "Sûre menüsünü kapat" : "Sûre menüsünü aç"}>☰</button>
         <a className="brand" href="#top" aria-label="Âyet Atlası ana sayfa">
@@ -273,7 +273,7 @@ export default function Home() {
           <button className={listenOpen ? "support-entry active" : "support-entry"} onClick={() => { setListenOpen(!listenOpen); setBlogOpen(false); setSupportOpen(false); setEngineOpen(false); }}><span>▶</span>{listenOpen ? "Atlas’a dön" : "Kur’an Dinle"}</button>
           <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setBlogOpen(false); setSupportOpen(false); setListenOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>
           <button className={supportOpen ? "support-entry active" : "support-entry"} onClick={() => { setSupportOpen(!supportOpen); setBlogOpen(false); setEngineOpen(false); setListenOpen(false); }}><span>♡</span>{supportOpen ? "Âyet Atlası’na dön" : "Hâlden Âyete"}</button>
-          <button className="icon-button" onClick={() => setNightMode(!nightMode)} aria-pressed={nightMode} aria-label={nightMode ? "Aydınlık görünüme geç" : "Gece görünümüne geç"}>◐</button>
+          <button className="icon-button" onClick={() => { const next = !nightMode; setNightMode(next); document.documentElement.classList.toggle("theme-dark", next); document.cookie = `theme=${next ? "dark" : "light"}; Path=/; Max-Age=31536000; Secure; SameSite=Lax`; }} aria-pressed={nightMode} aria-label={nightMode ? "Aydınlık görünüme geç" : "Gece görünümüne geç"}>◐</button>
           <span className="profile" aria-label="Çiğdem profili">Ç</span>
         </div>
       </header>
