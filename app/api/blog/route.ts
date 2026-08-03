@@ -14,6 +14,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const authenticatedUserId = request.headers.get("oai-authenticated-user-id");
+  const traceId = request.headers.get("x-trace-id") ?? crypto.randomUUID().replaceAll("-", "");
   if (!authenticatedUserId) return Response.json({ error: "Belge eklemek için güvenli oturum gereklidir." }, { status: 401 });
   const requestUrl = new URL(request.url);
   const origin = request.headers.get("Origin");
@@ -50,4 +51,3 @@ export async function POST(request: Request) {
     throw error;
   }
 }
-  const traceId = request.headers.get("x-trace-id") ?? crypto.randomUUID().replaceAll("-", "");
