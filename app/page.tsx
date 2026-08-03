@@ -215,7 +215,7 @@ export default function Home() {
     data.set("surahName", surahs.find((item) => item.no === surahNo)?.name ?? "");
     setBlogMessage("Belge güvenli arşive aktarılıyor…");
     try {
-      const response = await fetch("/api/blog", { method: "POST", body: data });
+      const response = await fetch("/api/blog", { method: "POST", body: data, headers: { "Idempotency-Key": crypto.randomUUID() } });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Belge eklenemedi.");
       form.reset();
