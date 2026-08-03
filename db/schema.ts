@@ -48,3 +48,22 @@ export const auditLogs = sqliteTable("audit_logs", {
   metadata: text("metadata").notNull().default("{}"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 }, (table) => [index("idx_audit_tenant_created").on(table.tenantId, table.createdAt)]);
+
+export const analyticsEvents = sqliteTable("analytics_events", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull().default("ayet-atlasi"),
+  sessionId: text("session_id").notNull(),
+  eventName: text("event_name").notNull(),
+  path: text("path").notNull(),
+  variant: text("variant").notNull().default("control"),
+  properties: text("properties").notNull().default("{}"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+}, (table) => [index("idx_analytics_event_created").on(table.eventName, table.createdAt), index("idx_analytics_variant_created").on(table.variant, table.createdAt)]);
+
+export const featureFlags = sqliteTable("feature_flags", {
+  key: text("key").primaryKey(),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(false),
+  rolloutPercentage: integer("rollout_percentage").notNull().default(0),
+  description: text("description").notNull().default(""),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
