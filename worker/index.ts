@@ -31,19 +31,31 @@ const TRUSTED_ORIGINS = new Set([
   "https://ayet-atlasi.bilgicigdem3535.chatgpt.site",
 ]);
 const RATE_LIMITS = new Map<string, { count: number; resetAt: number }>();
+const CANARY_HITS = new Map<string, { count: number; blockedUntil: number }>();
+const CANARY_PATH = "/api/internal/archive-index-7f3a9c";
+
+type BotSignals = { score?: number; verifiedBot?: boolean; ja4?: string };
+
+function botSignals(request: Request): BotSignals {
+  const cf = request.cf as unknown as { botManagement?: { score?: number; verifiedBot?: boolean; ja4?: string } } | undefined;
+  return cf?.botManagement ?? {};
+}
 
 function rateLimit(request: Request, pathname: string): Response | undefined {
   const isWrite = request.method !== "GET" && request.method !== "HEAD" && request.method !== "OPTIONS";
   const limit = pathname === "/api/blog" && isWrite ? 5 : pathname.startsWith("/api/") ? 120 : 300;
   const windowMs = pathname === "/api/blog" && isWrite ? 10 * 60_000 : 60_000;
   const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+  const signals = botSignals(request);
+  if (signals.verifiedBot) return undefined;
   const key = `${ip}:${request.method}:${pathname}`;
   const now = Date.now();
   const current = RATE_LIMITS.get(key);
   const bucket = !current || current.resetAt <= now ? { count: 1, resetAt: now + windowMs } : { count: current.count + 1, resetAt: current.resetAt };
   RATE_LIMITS.set(key, bucket);
   if (RATE_LIMITS.size > 5000) for (const [storedKey, value] of RATE_LIMITS) if (value.resetAt <= now) RATE_LIMITS.delete(storedKey);
-  if (bucket.count <= limit) return undefined;
+  const adjustedLimit = typeof signals.score === "number" && signals.score < 15 ? Math.max(12, Math.floor(limit / 4)) : limit;
+  if (bucket.count <= adjustedLimit) return undefined;
   return Response.json({ error: "Çok fazla istek gönderildi. Lütfen biraz sonra yeniden deneyin." }, { status: 429, headers: { "Retry-After": String(Math.ceil((bucket.resetAt - now) / 1000)), "Cache-Control": "no-store" } });
 }
 
@@ -95,6 +107,7 @@ const worker = {
     const analyticsConsent = /(?:^|;\s*)consent_analytics=granted(?:;|$)/.test(cookieHeader);
     const existingVariant = analyticsConsent ? cookieHeader.match(/(?:^|;\s*)aa_reader=(control|focus)/)?.[1] : undefined;
     const experimentVariant = analyticsConsent ? existingVariant ?? (Number.parseInt(traceId.slice(0, 2), 16) % 2 ? "focus" : "control") : "control";
+    const signals = botSignals(request);
 
     const finalize = (response: Response) => {
       const output = new Response(response.body, response);
@@ -105,9 +118,26 @@ const worker = {
       if (analyticsConsent && !existingVariant) output.headers.append("Set-Cookie", `aa_reader=${experimentVariant}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`);
       if (!analyticsConsent && /(?:^|;\s*)aa_reader=/.test(cookieHeader)) output.headers.append("Set-Cookie", "aa_reader=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax");
       output.headers.append("Server-Timing", `app;dur=${durationMs}`);
-      console.log(JSON.stringify({ timestamp: new Date().toISOString(), level: response.status >= 500 ? "error" : response.status >= 400 ? "warn" : "info", event: "http.request", service: "ayet-atlasi", traceId, method: request.method, path: url.pathname, status: response.status, durationMs, colo: request.cf?.colo ?? "local" }));
+      console.log(JSON.stringify({ timestamp: new Date().toISOString(), level: response.status >= 500 ? "error" : response.status >= 400 ? "warn" : "info", event: "http.request", service: "ayet-atlasi", traceId, method: request.method, path: url.pathname, status: response.status, durationMs, colo: request.cf?.colo ?? "local", botScore: signals.score ?? null, verifiedBot: signals.verifiedBot ?? false, tlsFingerprintPresent: Boolean(signals.ja4) }));
       return output;
     };
+
+    if (url.pathname === CANARY_PATH) {
+      const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+      const now = Date.now();
+      const previous = CANARY_HITS.get(ip);
+      const record = !previous || previous.blockedUntil <= now ? { count: 1, blockedUntil: now + 15 * 60_000 } : { count: previous.count + 1, blockedUntil: previous.blockedUntil };
+      CANARY_HITS.set(ip, record);
+      console.warn(JSON.stringify({ timestamp: new Date().toISOString(), level: "warn", event: "security.canary", service: "ayet-atlasi", traceId, path: url.pathname, repeated: record.count > 1, botScore: signals.score ?? null, verifiedBot: signals.verifiedBot ?? false, tlsFingerprintPresent: Boolean(signals.ja4) }));
+      const status = record.count > 1 && !signals.verifiedBot ? 403 : 204;
+      return finalize(withPlatformHeaders(new Response(null, { status, headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" } }), url.pathname, request));
+    }
+
+    const requesterIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
+    const canaryRecord = CANARY_HITS.get(requesterIp);
+    if (canaryRecord && canaryRecord.count > 1 && canaryRecord.blockedUntil > Date.now() && !signals.verifiedBot) {
+      return finalize(withPlatformHeaders(Response.json({ error: "Erişim geçici olarak sınırlandırıldı." }, { status: 403, headers: { "Cache-Control": "no-store" } }), url.pathname, request));
+    }
 
     if (request.method === "OPTIONS") {
       const origin = request.headers.get("Origin");

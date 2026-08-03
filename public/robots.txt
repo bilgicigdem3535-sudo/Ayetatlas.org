@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /api/internal/archive-index-7f3a9c
 
 User-agent: GPTBot
 Allow: /
