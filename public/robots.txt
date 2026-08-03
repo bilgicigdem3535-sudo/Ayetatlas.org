@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /page.md
+Allow: /api/content
+Allow: /api/content/chunks
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /page.md
+Allow: /api/content
+Allow: /api/content/chunks
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /page.md
+Allow: /api/content
+Allow: /api/content/chunks
+
+Sitemap: https://ayetatlas.org/sitemap.xml

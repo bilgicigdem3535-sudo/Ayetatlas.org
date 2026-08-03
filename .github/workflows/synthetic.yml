@@ -1,0 +1,25 @@
+name: Synthetic availability
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: ${{ vars.SYNTHETIC_BASE_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe liveness and readiness
+        env:
+          BASE_URL: ${{ vars.SYNTHETIC_BASE_URL }}
+          AUTH: ${{ secrets.SYNTHETIC_AUTH_HEADER }}
+        run: |
+          curl --fail --silent --show-error --max-time 10 ${AUTH:+-H "$AUTH"} "$BASE_URL/livez"
+          curl --fail --silent --show-error --max-time 10 ${AUTH:+-H "$AUTH"} "$BASE_URL/readyz"
+          curl --fail --silent --show-error --max-time 15 ${AUTH:+-H "$AUTH"} "$BASE_URL/healthz"
+*** Add File: C:/Users/bilgi/Documents/Codex/2026-08-03/sites-plugin-sites-openai-bundled-bir/.github/CODEOWNERS
+* @bilgicigdem3535
+/db/ @bilgicigdem3535
+/drizzle/ @bilgicigdem3535
+/.github/workflows/ @bilgicigdem3535
