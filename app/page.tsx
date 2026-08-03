@@ -3,6 +3,8 @@
 import { FormEvent, useMemo, useState } from "react";
 import { surahs } from "./surahs";
 import type { VerseStudy } from "./content/types";
+import LanguageSwitcher from "./language-switcher";
+import type { Locale } from "./i18n";
 
 const layers = [
   {
@@ -131,7 +133,7 @@ type BlogPost = {
 
 type QuranVerse = { key: string; text: string; loading: boolean; error?: string };
 
-export default function Home() {
+export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
   const [activeLayer, setActiveLayer] = useState("lafiz");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(37);
@@ -269,6 +271,7 @@ export default function Home() {
           <kbd>⌘ K</kbd>
         </label>
         <div className="header-actions">
+          <LanguageSwitcher locale={locale} />
           <button className={blogOpen ? "support-entry active" : "support-entry"} onClick={() => { if (!blogOpen) void loadBlogPosts(); setBlogOpen(!blogOpen); setListenOpen(false); setSupportOpen(false); setEngineOpen(false); }}><span>✎</span>{blogOpen ? "Atlas’a dön" : "Blog"}</button>
           <button className={listenOpen ? "support-entry active" : "support-entry"} onClick={() => { setListenOpen(!listenOpen); setBlogOpen(false); setSupportOpen(false); setEngineOpen(false); }}><span>▶</span>{listenOpen ? "Atlas’a dön" : "Kur’an Dinle"}</button>
           <button className={engineOpen ? "support-entry active" : "support-entry"} onClick={() => { setEngineOpen(!engineOpen); setBlogOpen(false); setSupportOpen(false); setListenOpen(false); }}><span>◎</span>{engineOpen ? "Atlas’a dön" : "Atlas Omurgası"}</button>

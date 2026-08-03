@@ -34,6 +34,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .global-search input { border: 0; outline: 0; flex: 1; background: transparent; color: var(--ink); font-size: 13px; }
 kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-size: 10px; background: rgba(255,255,255,.7); }
 .header-actions { display: flex; gap: 10px; }
+.language-switcher select { min-height: 40px; border: 1px solid rgba(11,107,81,.18); border-radius: 12px; padding: 0 9px; background: rgba(255,255,255,.78); color: var(--ink); font: 700 12px/1 var(--font-geist-sans); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.locale-portal { min-height: 100vh; padding: 24px; display: grid; place-items: center; background: radial-gradient(circle at 50% 0,rgba(188,143,53,.16),transparent 38%),#faf8f1; color: #15382b; }
+.locale-portal > .language-switcher { position: fixed; top: 20px; right: 20px; }
+.locale-portal[dir="rtl"] > .language-switcher { right: auto; left: 20px; }
+.locale-portal article { width: min(760px,100%); padding: clamp(28px,7vw,72px); border: 1px solid rgba(184,134,43,.32); border-radius: 32px; background: rgba(255,255,255,.82); box-shadow: var(--shadow); }
+.locale-portal article > span { color: #8a651c; font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+.locale-portal h1 { margin: 18px 0; font: 700 clamp(42px,8vw,78px)/1.02 Georgia,serif; }
+.locale-portal p { font-size: clamp(17px,2vw,21px); line-height: 1.75; }
+.locale-portal a { display: inline-block; margin-top: 16px; padding: 13px 18px; border-radius: 13px; background: #15563d; color: #fff; text-decoration: none; }
 .support-entry { display: flex; align-items: center; gap: 6px; border: 1px solid rgba(11,107,81,.11); border-radius: 12px; padding: 0 12px; background: rgba(221,240,230,.65); color: var(--green); font-size: 9px; font-weight: 700; cursor: pointer; }
 .support-entry span { font-size: 14px; }
 .support-entry.active { color: white; background: var(--green); }

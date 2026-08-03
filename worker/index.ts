@@ -37,6 +37,18 @@ const CANARY_HITS = new Map<string, { count: number; blockedUntil: number }>();
 const SINGLE_FLIGHTS = new Map<string, Promise<Response>>();
 const CANARY_PATH = "/api/internal/archive-index-7f3a9c";
 const RESILIENT_READ_PATHS = new Set(["/api/content", "/api/content/chunks", "/page.md", "/llms.txt", "/llms-full.txt"]);
+const SUPPORTED_LOCALES = new Set(["tr", "en", "de", "ar"]);
+const COUNTRY_LOCALES: Record<string, string> = { TR: "tr", DE: "de", AT: "de", CH: "de", SA: "ar", AE: "ar", EG: "ar", QA: "ar" };
+
+function detectLocale(request: Request): string {
+  const cookieLocale = request.headers.get("Cookie")?.match(/(?:^|;\s*)USER_LOCALE=(tr|en|de|ar)(?:;|$)/)?.[1];
+  if (cookieLocale) return cookieLocale;
+  const accepted = (request.headers.get("Accept-Language") ?? "").split(",").map((item) => item.split(";")[0].trim().slice(0, 2).toLowerCase());
+  const browserLocale = accepted.find((item) => SUPPORTED_LOCALES.has(item));
+  if (browserLocale) return browserLocale;
+  const country = request.headers.get("CF-IPCountry") ?? request.cf?.country;
+  return country ? COUNTRY_LOCALES[country] ?? "en" : "tr";
+}
 
 type BotSignals = { score?: number; verifiedBot?: boolean; ja4?: string };
 
@@ -158,6 +170,12 @@ const worker = {
       url.hostname = url.hostname === "www.ayetatlas.org" ? "ayetatlas.org" : url.hostname;
       url.pathname = withoutTrailingSlash;
       return finalize(withPlatformHeaders(Response.redirect(url, 308), url.pathname, request));
+    }
+    if (url.pathname === "/" && request.method === "GET" && !signals.verifiedBot && !request.headers.get("Accept")?.includes("text/markdown")) {
+      url.pathname = `/${detectLocale(request)}`;
+      const redirect = Response.redirect(url, 307);
+      redirect.headers.append("Vary", "Cookie, Accept-Language, CF-IPCountry");
+      return finalize(withPlatformHeaders(redirect, url.pathname, request));
     }
 
     if (url.pathname === "/api/health") {
