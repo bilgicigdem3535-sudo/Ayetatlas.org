@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { topicDomains } from "../research-data";
+export const metadata = { title: "Konu Gezgini · Âyet Atlası" };
+export default function TopicsPage() { return <main className="index-page" id="main-content"><Link href="/tr">← Âyet Atlası</Link><header><span>18 ARAŞTIRMA ALANI</span><h1>Konu Gezgini</h1><p>Bu dizin, var olmayan Neo4j bağlantıları yerine Âyet Atlası’nın yayımlanmış katmanlarını açık bir kavram haritasıyla düzenler. Sayılar içerik kapsamı arttıkça üretilecek; hiçbir alan “0 konu” diye sahte sonuç göstermez.</p></header><section className="index-grid">{topicDomains.map(([name, terms], index) => <article key={name}><small>{String(index + 1).padStart(2,"0")}</small><h2>{name}</h2><p>{terms}</p><Link href={`/api/content?limit=100`}>Yayımlanmış çalışmaları tara →</Link></article>)}</section></main>; }

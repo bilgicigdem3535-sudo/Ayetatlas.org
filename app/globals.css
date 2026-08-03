@@ -286,7 +286,7 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .word-detail p { margin: 5px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
 .word-card small { color: #a6afa9; font: 8px var(--font-geist-mono); }
 .word-card strong, .word-card b, .word-card span { display: block; }
-.word-card strong { margin: 6px 0; font: 25px "Traditional Arabic", serif; color: var(--green-deep); text-align: right; }
+.word-card strong { margin: 6px 0; font-family: var(--font-amiri-quran),"KFGQPC Uthmanic Script HAFS","Noto Naskh Arabic",serif; font-size: 25px; font-weight: 400; line-height: 1.6; color: var(--green-deep); text-align: right; }
 .word-card b { font-size: 10px; }
 .word-card span { font-size: 8px; color: var(--muted); margin-top: 4px; }
 .progress-track { height: 3px; background: rgba(19,35,29,.08); margin-top: 28px; border-radius: 4px; overflow: hidden; }
@@ -325,6 +325,25 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .clarity-mode { --ink: #07120e; --muted: #33443d; --line: rgba(7,18,14,.24); }
 .clarity-mode .glass,.clarity-mode .insight-panel,.clarity-mode .sidebar { background-color: #fffef9; backdrop-filter: none; -webkit-backdrop-filter: none; border-color: rgba(7,18,14,.2); }
 .clarity-mode button,.clarity-mode input,.clarity-mode textarea,.clarity-mode select { border-color: rgba(7,18,14,.25); }
+.clarity-mode .word-section,.clarity-mode .verse-study,.clarity-mode .layer-tabs,.clarity-mode .mana-lenses,.clarity-mode .secret-nav,.clarity-mode .engine-card,.clarity-mode .decode-map { display: none !important; }
+.clarity-mode .insight-panel { padding-top: 28px; }
+.research-links { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; margin: 0 12px 12px; }
+.research-links a { padding: 8px 4px; border: 1px solid var(--line); border-radius: 9px; color: var(--green-deep); background: rgba(255,255,255,.55); text-align: center; text-decoration: none; font-size: 9px; font-weight: 750; }
+.index-page { width: min(1120px,calc(100% - 32px)); margin: 0 auto; padding: 36px 0 90px; color: var(--ink); }
+.index-page > a { color: var(--green-deep); }
+.index-page header { padding: clamp(32px,7vw,76px) 0 42px; max-width: 850px; }
+.index-page header span { color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .16em; }
+.index-page h1 { margin: 12px 0 18px; font: 700 clamp(44px,8vw,82px)/1 Georgia,serif; }
+.index-page header p { color: var(--muted); font-size: 18px; line-height: 1.75; }
+.index-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.index-grid article { min-height: 180px; padding: 24px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.72); box-shadow: 0 12px 40px rgba(20,45,34,.07); }
+.index-grid article small { color: var(--gold); font-weight: 800; }
+.index-grid article h2 { font-family: Georgia,serif; }
+.index-grid article p { color: var(--muted); line-height: 1.6; }
+.index-grid article a { color: var(--green-deep); font-size: 13px; }
+.name-grid article { min-height: 130px; }
+.muqattaa-grid article b { display: block; color: var(--gold); font: 400 42px/1.4 var(--font-amiri-quran),serif; }
+@media (max-width: 760px) { .index-grid { grid-template-columns: 1fr; } .index-grid article { min-height: auto; } }
 .verse-nav button:disabled { opacity: .35; cursor: not-allowed; }
 .note-button:disabled { opacity: .5; cursor: not-allowed; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; }
@@ -428,6 +447,17 @@ kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-
 .secret-result h5 { font: 16px Georgia, serif; margin: 6px 0 8px; }
 .secret-result p { position: relative; z-index: 1; color: rgba(255,255,255,.78); font-size: 9px; line-height: 1.6; margin: 0 0 11px; }
 .secret-result code { display: block; position: relative; z-index: 1; padding: 8px; border-radius: 8px; background: rgba(0,0,0,.14); color: #f0d79e; font: 8px/1.4 var(--font-geist-mono); white-space: normal; }
+.arabic-colored { display: flex; flex-wrap: wrap; justify-content: center; gap: .2em .45em; }
+.arabic-colored > span { position: relative; padding-block: .05em; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .18em; transition: text-decoration-color .2s ease, background-color .2s ease; }
+.arabic-colored > span:hover,.arabic-colored > span:focus-visible { text-decoration-color: currentColor; background: rgba(255,255,255,.5); border-radius: .15em; }
+.dimension-engine { position: relative; z-index: 1; margin-top: 13px; }
+.dimension-nav { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 5px; }
+.dimension-nav button { min-height: 34px; border: 1px solid rgba(255,255,255,.18); border-radius: 8px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.78); font-size: 11px; font-weight: 800; cursor: pointer; }
+.dimension-nav button.active { background: #f0d79e; color: #174e3d; border-color: #f0d79e; }
+.dimension-engine article { margin-top: 10px; padding: 13px; border: 1px solid rgba(255,255,255,.13); border-radius: 11px; background: rgba(0,0,0,.1); }
+.dimension-engine article small { font-size: 10px; }
+.dimension-engine h6 { margin: 7px 0; color: white; font: 15px/1.35 Georgia,serif; }
+.dimension-engine .dimension-rule { margin-top: 10px; color: rgba(255,255,255,.64); font-size: 11px; }
 .number-matrix { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 9px; }
 .number-matrix > div { min-height: 69px; padding: 8px; border-radius: 9px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.08); }
 .number-matrix small, .number-matrix b, .number-matrix span { display: block; }

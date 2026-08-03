@@ -173,8 +173,7 @@ const worker = {
     }
     if (url.pathname === "/" && request.method === "GET" && !signals.verifiedBot && !request.headers.get("Accept")?.includes("text/markdown")) {
       url.pathname = `/${detectLocale(request)}`;
-      const redirect = Response.redirect(url, 307);
-      redirect.headers.append("Vary", "Cookie, Accept-Language, CF-IPCountry");
+      const redirect = new Response(null, { status: 307, headers: { Location: url.toString(), Vary: "Cookie, Accept-Language, CF-IPCountry" } });
       return finalize(withPlatformHeaders(redirect, url.pathname, request));
     }
 
@@ -229,11 +228,12 @@ const worker = {
     const cacheKey = new Request(routedRequest.url, { method: "GET", headers: { Accept: request.headers.get("Accept") ?? "*/*" } });
     let response: Response;
     if (resilientRead) {
-      let flight = SINGLE_FLIGHTS.get(cacheKey.url);
+      const flightKey = `${cacheKey.url}\n${request.headers.get("Accept") ?? "*/*"}`;
+      let flight = SINGLE_FLIGHTS.get(flightKey);
       if (!flight) {
         flight = handler.fetch(routedRequest, env, ctx);
-        SINGLE_FLIGHTS.set(cacheKey.url, flight);
-        void flight.then(() => SINGLE_FLIGHTS.delete(cacheKey.url), () => SINGLE_FLIGHTS.delete(cacheKey.url));
+        SINGLE_FLIGHTS.set(flightKey, flight);
+        void flight.then(() => SINGLE_FLIGHTS.delete(flightKey), () => SINGLE_FLIGHTS.delete(flightKey));
       }
       try {
         response = (await flight).clone();
@@ -244,7 +244,10 @@ const worker = {
         }
       } catch {
         const stale = await caches.default.match(cacheKey);
-        if (!stale) throw new Error("Resilient read failed without a cached response");
+        if (!stale) {
+          response = Response.json({ error: "İçerik geçici olarak kullanılamıyor." }, { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "30" } });
+          return finalize(withPlatformHeaders(response, url.pathname, request, nonce));
+        }
         const staleHeaders = new Headers(stale.headers);
         staleHeaders.set("Warning", '110 - "Response is stale"');
         staleHeaders.set("X-Cache-Fallback", "stale-if-error");

@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { surahs } from "./surahs";
 import type { VerseStudy } from "./content/types";
 import LanguageSwitcher from "./language-switcher";
@@ -33,15 +34,15 @@ const layers = [
     label: "Hakikat-ötesi",
     eyebrow: "SEMBOLİK OKUMA",
     title: "İç çokluğu tek niyette hizalamak",
-    text: "Belge yaklaşımınızla bu âyet bir ‘hiza kapısı’ olarak okunabilir: düşünce, duygu ve eylemin aynı yöne bakması. Bu bölüm kişisel tefekkür önerisidir; tefsir veya kesin dinî hüküm değildir.",
+    text: "Özgün mana yaklaşımıyla bu âyet bir ‘hiza kapısı’ olarak okunabilir: düşünce, duygu ve eylemin aynı yöne bakması. Bu bölüm kişisel tefekkür önerisidir; tefsir veya kesin dinî hüküm değildir.",
   },
 ];
 
 const besmeleLayers = [
   { id: "lafiz", label: "Lafız", eyebrow: "DÖRT KELİMELİK EŞİK", title: "Eylemi bir isim ve yön ile başlatmak", text: "Bâ harfiyle açılan yapı, eylemi başıboş bırakmaz; isim, kaynak ve iki rahmet niteliği aynı cümlede başlangıca yön verir." },
   { id: "kok", label: "Kök & Dil", eyebrow: "س م و / و س م · ر ح م", title: "Adlandırmak ve rahmetle kuşatmak", text: "İsim alanı tanımlarken R-H-M kökü hem kuşatan hem süreklilik kazanan rahmet eksenini kurar. Aynı kökün iki kalıbı, kapsam ile yakınlığı ayırır." },
-  { id: "baglam", label: "Bağlam", eyebrow: "BAŞLANGIÇ FORMÜLÜ", title: "Okumadan eyleme ortak yön", text: "Belgedeki ana örgü Besmele’yi yalnız söylenen bir cümle değil, niyetin söz ve davranışa taşındığı çift yönlü bir köprü olarak ele alır." },
-  { id: "hakikat", label: "Hakikat-ötesi", eyebrow: "SEMBOLİK OKUMA", title: "İnâyet aşağı, niyet yukarı akar", text: "Belge dilinizde üst akış rahmet ve inâyeti, alt akış insanın niyet ve eylemini temsil eder. Bu bir tefekkür hipotezidir; kesin ontolojik açıklama değildir." },
+  { id: "baglam", label: "Bağlam", eyebrow: "BAŞLANGIÇ FORMÜLÜ", title: "Okumadan eyleme ortak yön", text: "Ana örgü Besmele’yi yalnız söylenen bir cümle değil, niyetin söz ve davranışa taşındığı çift yönlü bir köprü olarak ele alır." },
+  { id: "hakikat", label: "Hakikat-ötesi", eyebrow: "SEMBOLİK OKUMA", title: "İnâyet aşağı, niyet yukarı akar", text: "Özgün mana dilinde üst akış rahmet ve inâyeti, alt akış insanın niyet ve eylemini temsil eder. Bu bir tefekkür hipotezidir; kesin ontolojik açıklama değildir." },
 ];
 
 const words = [
@@ -62,12 +63,29 @@ const secretLayers = [
   { id: "ebced", icon: "۷۸۰", name: "Ebced & Gematria", tag: "HESAPLANABİLİR", title: "Karşılaştırmalı harf-sayı matrisi", text: "و ا ل ص ا ف ا ت ص ف ا · 11 yazılı harf · 6 benzersiz harf. Motor aynı diziyi dört ayrı hesap geleneğinde işler; sonuçları birbirine kanıt saymadan örüntü karşılaştırması olarak gösterir.", formula: "Klasik Ebced 780 · Sıralı değer 114 · İndirgenmiş toplam 51 · Kök 6" },
   { id: "gates", icon: "◇", name: "Makro / Mikro Kapılar", tag: "SEMBOLİK HARİTA", title: "Makro Kapı: Hiza", text: "Mikro kapılar sırasıyla Niyet, Söz ve Eylem’dir. Kapı ancak üçü aynı hatta bakarken akış üretir; biri ayrıldığında âyet ‘eksik halka aynası’ olarak çalışır.", formula: "Niyet → Söz → Eylem → Hiza" },
   { id: "keepers", icon: "◉", name: "Görevliler", tag: "ARKETİPSEL ROLLER", title: "Kapı görevlisi: Es-Sâff", text: "Bir varlık iddiası değil, sembolik bir görev adıdır. Dağınık parçaları zorlamadan sıraya çağırır. Ayna görevlisi ayrılığı gösterir; mühür görevlisi sevgiyi korur.", formula: "Çağıran · Gösteren · Koruyan · Mühürleyen" },
-  { id: "dimensions", icon: "∞", name: "Boyut & Paralel", tag: "MANA HİPOTEZİ", title: "Dört boyutlu okuma", text: "1D harf, 2D kelime ilişkisi, 3D yaşanan davranış, 4D zaman boyunca tekrar eden örüntüdür. ‘Paralel’ mercek, aynı niyetin seçildiği ve seçilmediği iki olası yaşam akışını karşılaştırır.", formula: "Metin → İlişki → Deneyim → Döngü" },
+  { id: "dimensions", icon: "∞", name: "1D–12D Mana", tag: "BİLİNÇ MERCEKLERİ", title: "On iki boyutlu okuma", text: "Aynı lafız; harften bütüne, bireyden ortak bilince ve zaman-ötesi tefekküre uzanan on iki ayrı soru düzeyinde sınanır. Bunlar fiziksel boyut iddiası veya kesin meal değil, özgün Arapça metinden üretilen açıkça etiketli mana hipotezleridir.", formula: "Harf → Bağ → Eylem → Zaman → Sistem → Bütün" },
   { id: "quantum", icon: "ψ", name: "Kuantum Mercek", tag: "BİLİMSEL OLMAYAN METAFOR", title: "Mana olasılık alanı", text: "Âyet tek bir yoruma indirgenmeden olası manalar alanında tutulur; bağlam ve niyet hangi anlamın öne çıkacağını belirler. Bu, kuantum fiziği açıklaması değil, çoklu yorum için kullanılan metafordur.", formula: "|Mana⟩ = α|lafız⟩ + β|bağlam⟩ + γ|iç ayna⟩" },
   { id: "formula", icon: "M", name: "Mana Formülü", tag: "SEMBOLİK MODEL", title: "Akış denklemi", text: "Mana yoğunluğu; niyet, hiza ve şefkat birlikte arttığında derinleşir; iç gürültü yükseldiğinde görünmezleşir. Denklem ölçüm değil, tefekkür pusulasıdır.", formula: "M = (Niyet × Hiza × Şefkat) ÷ (Gürültü + 1)" },
   { id: "chemistry", icon: "⚗", name: "Simyasal / Kimyasal", tag: "DÖNÜŞÜM METAFORU", title: "İçsel bağ kurma tepkimesi", text: "Dağınık düşünce ve duygu, niyet katalizörüyle birleşerek tutarlı eyleme dönüşür. Buradaki ‘kimya’ fiziksel reaksiyon veya sağlık iddiası değildir.", formula: "Düşünce + Duygu + Niyet(k) → Hiza → Eylem" },
   { id: "between", icon: "⋯", name: "Satırarası Sır", tag: "GİZLİ KATMAN", title: "Söylenmeyenin aynası", text: "Âyet ‘neye hizalanmalı?’ sorusunun cevabını burada söylemez. Boşluk, okuyucunun niyetini görünür kılar: güç, korku, hizmet veya sevgi. Sır, cevaptan önce niyetin açığa çıkmasıdır.", formula: "Görünen → İşaret → Bağlantı → Sır" },
 ];
+
+const dimensionLenses = [
+  { level: "1D", name: "Harf izi", question: "Hangi harf, ses ve vurgu kapıyı açıyor?", saffat: "Sâd–fâ–fâ tekrarı, dağınıklığın ritim içinde düzene çağrılışını işittirir." },
+  { level: "2D", name: "Kelime bağı", question: "Kelimeler birbirinin anlamını nasıl değiştiriyor?", saffat: "Yemin edatı ile saf kökünün pekişmesi, görüntüyü bir düzen tanıklığına dönüştürür." },
+  { level: "3D", name: "Eylem alanı", question: "Mana gündelik davranışta neye dönüşüyor?", saffat: "Düşünce, söz ve davranışın aynı niyet çevresinde tutarlı hâle gelmesini sorar." },
+  { level: "4D", name: "Zaman örüntüsü", question: "Bu hareket geçmiş–şimdi–gelecekte nasıl tekrar ediyor?", saffat: "Hiza tek anlık karar değil; her dağılmadan sonra yeniden kurulan bir yön disiplinidir." },
+  { level: "5D", name: "Olasılık ayrımı", question: "Farklı seçimler hangi mana yollarını açıyor?", saffat: "Zorla tekleştirme ile amaçta uyum iki ayrı gelecek üretir; âyet ikincisini düşünmeye açar." },
+  { level: "6D", name: "İlişki ağı", question: "Bireysel seçim toplulukta hangi bağı kuruyor?", saffat: "Her parça özünü korurken ortak maksada yöneldiğinde çokluk çatışma değil ahenk üretebilir." },
+  { level: "7D", name: "Arketipsel görev", question: "Metindeki hareket hangi evrensel görevi temsil ediyor?", saffat: "Hizalayan, engeli ayıran ve hatırlatmayı taşıyan işlevler bir dönüşüm dizisi kurar." },
+  { level: "8D", name: "Bütünsel bilinç", question: "Âyet sûre ve Kur’an bütünüyle nasıl konuşuyor?", saffat: "Sûrenin açılışındaki saf, tevhid fikrini yalnız inanç cümlesi değil kozmik tutarlılık olarak hazırlar." },
+  { level: "9D", name: "Birlik–çokluk", question: "Farklılık kaybolmadan birlik nasıl mümkün olur?", saffat: "Birlik benzeşmek değil; farklı varlıkların aynı hakikat yönünde yerini bulması olarak okunabilir." },
+  { level: "10D", name: "Mana ekolojisi", question: "Bu okuma insan, toplum ve varlık düzenini nasıl bağlar?", saffat: "İç düzenin toplumsal adalete, toplumsal düzenin de varlığa karşı sorumluluğa uzandığı bir halka görünür." },
+  { level: "11D", name: "Sessiz merkez", question: "Kavramlardan önce kalan yönelim nedir?", saffat: "Sözden önceki niyet, parçaları zorlamadan ortak merkeze çağıran sessiz bir tanıklık gibi düşünülebilir." },
+  { level: "12D", name: "Bütünün aynası", question: "Âyet tüm katmanları tek anda nasıl yansıtır?", saffat: "Harf, beden, zaman, toplum ve bütün; ‘yerini bulup hakikate yönelme’ çekirdeğinde birbirini yansıtan halkalara dönüşür." },
+] as const;
+
+const arabicWordColors = ["#07533e", "#9a6a18", "#2f7660", "#8a4f68", "#3f6690", "#8b5d2e"];
 
 const numberSystems = [
   { name: "Klasik Ebced", value: "780", note: "Yazılı harf değerleri; şedde ayrı sayılmaz" },
@@ -141,6 +159,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
   const [navOpen, setNavOpen] = useState(false);
   const [manaLens, setManaLens] = useState("kapi");
   const [secretLayer, setSecretLayer] = useState("ebced");
+  const [dimensionLevel, setDimensionLevel] = useState("1D");
   const [supportInput, setSupportInput] = useState("");
   const [supportMode, setSupportMode] = useState<"idle" | "low" | "focus" | "calm" | "money" | "love" | "work" | "urgent">("idle");
   const [supportOpen, setSupportOpen] = useState(false);
@@ -161,6 +180,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
   const [clarityMode, setClarityMode] = useState(false);
   const [quranVerse, setQuranVerse] = useState<QuranVerse>({ key: "37:1", text: "وَالصَّافَّاتِ صَفًّا", loading: false });
   const [verseStudy, setVerseStudy] = useState<VerseStudy>();
+  const studyRequestKey = useRef("");
   const selectedSurah = selected === 0 ? { no: 0, name: "Besmele", count: 1, mark: "Çekirdek çalışma" } : (surahs.find((s) => s.no === selected) ?? surahs[36]);
   const activeLayers = selected === 0 ? besmeleLayers : layers;
   const layer = activeLayers.find((item) => item.id === activeLayer) ?? activeLayers[0];
@@ -180,19 +200,21 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
       const response = await fetch(`/api/quran/${surahNo}/${ayahNo}`);
       const data = await response.json() as { text?: string; error?: string };
       if (!response.ok || !data.text) throw new Error(data.error || "Âyet metni alınamadı.");
-      setQuranVerse({ key, text: data.text, loading: false });
+      setQuranVerse((current) => current.key === key ? { key, text: data.text, loading: false } : current);
     } catch {
-      setQuranVerse({ key, text: "", loading: false, error: "Arapça mushaf metni şu anda yüklenemedi." });
+      setQuranVerse((current) => current.key === key ? { key, text: "", loading: false, error: "Arapça mushaf metni şu anda yüklenemedi." } : current);
     }
   };
   const loadVerseStudy = async (surahNo: number, ayahNo: number) => {
+    const key = `${surahNo}:${ayahNo}`;
+    studyRequestKey.current = key;
     setVerseStudy(undefined);
     try {
       const response = await fetch(`/api/content?surah=${surahNo}&ayah=${ayahNo}&limit=1`);
       const data = await response.json() as { items?: Array<{ study: VerseStudy }> };
-      setVerseStudy(response.ok ? data.items?.[0]?.study : undefined);
+      if (studyRequestKey.current === key) setVerseStudy(response.ok ? data.items?.[0]?.study : undefined);
     } catch {
-      setVerseStudy(undefined);
+      if (studyRequestKey.current === key) setVerseStudy(undefined);
     }
   };
 
@@ -238,7 +260,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
     else setSupportMode("low");
   };
   const shareVerse = async () => {
-    const text = "Sâffât 37:1 — Saf saf dizilenlere andolsun. · Âyet Atlası";
+    const text = `${selectedSurah.name} ${currentVerse}. âyet · Âyet Atlası`;
     try {
       if (navigator.share) await navigator.share({ title: "Âyet Atlası", text, url: window.location.href });
       else await navigator.clipboard.writeText(`${text} ${window.location.href}`);
@@ -247,7 +269,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
   };
   const saveReflection = () => {
     if (!reflectionNote.trim()) return;
-    localStorage.setItem(`ayet-atlasi-note-${selected}-1`, reflectionNote.trim());
+    localStorage.setItem(`ayet-atlasi-note-${selected}-${currentVerse}`, reflectionNote.trim());
     setFeedback("Tefekkür notu bu cihazda saklandı");
   };
   const chooseSurah = (no: number) => { setSelected(no); setCurrentVerse(1); setNavOpen(false); setActiveLayer("lafiz"); if (no > 0) { void loadQuranVerse(no, 1); void loadVerseStudy(no, 1); } else setVerseStudy(undefined); };
@@ -284,6 +306,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
       <aside className={`sidebar glass ${navOpen ? "open" : ""}`}>
         <button className="side-support-entry" onClick={() => { setSupportOpen(true); setEngineOpen(false); setListenOpen(false); setNavOpen(false); }}><span>♡</span><div><b>Hâlden Âyete</b><small>Hayat hâlleri için ayrı rehber alanı</small></div><i>→</i></button>
         <div className="side-heading"><span>SÛRELER</span><small>114</small></div>
+        <nav className="research-links" aria-label="Araştırma dizinleri"><Link href="/konular">Konular</Link><Link href="/isimler">İsimler</Link><Link href="/mukattaa">Mukattaa</Link></nav>
         <div className="mini-search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sûre ara" /></div>
         <nav className="surah-list" aria-label="Sûreler">
           <button className={selected === 0 ? "surah special active" : "surah special"} onClick={() => chooseSurah(0)}>
@@ -332,7 +355,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
         </section> : engineOpen ? <section className="backstage">
           <div className="backstage-hero glass"><span className="eyebrow">BUZDAĞININ GÖRÜNMEYEN KISMI</span><h1>Atlas Omurgası</h1><p>Görünen her yorumun arkasında metni koruyan, delili izleyen, tekrarları işaretleyen ve sembolik dili doğru etikette tutan bir üretim sistemi çalışmalı.</p><div className="backstage-stats"><span><b>6</b> kalite adımı</span><span><b>3</b> bilgi sınıfı</span><span><b>1</b> değişmez ilke: metne sadakat</span></div></div>
           <div className="pipeline-grid">{atlasPipeline.map((step) => <article className="pipeline-card" key={step.no}><span>{step.no}</span><small>{step.state}</small><h2>{step.name}</h2><p>{step.text}</p></article>)}</div>
-          <div className="evidence-ledger glass"><div><span className="eyebrow">DELİL DEFTERİ</span><h2>Her cümlenin kimliği olacak</h2><p>Motorun asıl zekâsı daha çok yorum üretmek değil, her yorumun nereden geldiğini ve ne kadar kesin olduğunu görünür kılmaktır.</p></div><ul><li><b>Metinsel bilgi</b><span>Âyet, kelime, kök, gramer, bağlam</span></li><li><b>Aktarılan yorum</b><span>Kaynak ve görüş adıyla, doğrudan izlenebilir</span></li><li><b>Mana hipotezi</b><span>Belge diliyle üretilmiş sembolik tefekkür; kesin hüküm değil</span></li></ul></div>
+          <div className="evidence-ledger glass"><div><span className="eyebrow">DELİL DEFTERİ</span><h2>Her cümlenin kimliği olacak</h2><p>Motorun asıl zekâsı daha çok yorum üretmek değil, her yorumun nereden geldiğini ve ne kadar kesin olduğunu görünür kılmaktır.</p></div><ul><li><b>Metinsel bilgi</b><span>Âyet, kelime, kök, gramer, bağlam</span></li><li><b>Aktarılan yorum</b><span>Kaynak ve görüş adıyla, doğrudan izlenebilir</span></li><li><b>Mana hipotezi</b><span>Özgün mana diliyle üretilmiş sembolik tefekkür; kesin hüküm değil</span></li></ul></div>
           <div className="governance-row"><div><b>Tekrar radarı</b><p>Aynı düşünce iskeletinin farklı kelimelerle tekrarını da yakalar.</p></div><div><b>Çelişki aynası</b><p>Çatışan iddiaları silmez; yan yana getirip gerekçelerini gösterir.</p></div><div><b>Sürüm hafızası</b><p>Her değişiklik tarihlenir; eski yorum ve değişme nedeni korunur.</p></div></div>
           <section className="decode-map glass">
             <div className="decode-intro"><span className="eyebrow">BÜTÜNSEL ÖRÜNTÜ OKUMASI · MANA HİPOTEZİ</span><h2>Makrodan mikroya, mikrodan makroya</h2><p>Bu alan “kesin gizli anlam” ilan etmez. Bir âyetin en küçük dil işaretini sûre ve Kur’an bütünü içinde sınayan; bütüne dair iddiayı da yeniden kelimeye döndürüp doğrulayan çift yönlü araştırma yöntemidir.</p></div>
@@ -340,16 +363,16 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
             <div className="decode-law"><b>Temel denklem</b><code>Mana güveni = Lafız × Bağlam × Bütünlük × Kaynak izi − Çelişki − Tekrar − Kesinlik taşması</code><p>Bir sonuç lafza dayanmıyor, yakın bağlamla çatışıyor veya sembolik hipotezi kesin bilgi gibi sunuyorsa derinlik değil gürültü sayılır.</p></div>
           </section>
         </section> : verseStudy ? <section className="verse-study">
-          <div className="verse-study-head"><span className="eyebrow">ÂYETE ÖZGÜ YEDİ KATMAN</span><h2>{selectedSurah.name} {currentVerse} · belge diliyle derin okuma</h2><p>{verseStudy.sourceBasis}</p></div>
+          <div className="verse-study-head"><span className="eyebrow">ÂYETE ÖZGÜ YEDİ KATMAN</span><h2>{selectedSurah.name} {currentVerse} · özgün mana diliyle derin okuma</h2><p>{verseStudy.sourceBasis}</p></div>
           <div className="study-stack">
             <article><small>01 · LAFIZ ODAĞI</small><h3>Âyet neyi öne çıkarıyor?</h3><p>{verseStudy.literalFocus}</p></article>
             <article><small>02 · KÖK VE DİL</small><h3>Kelimenin taşıdığı alan</h3><p>{verseStudy.rootLanguage}</p></article>
             <article><small>03 · YAKIN BAĞLAM</small><h3>Pasaj içindeki görevi</h3><p>{verseStudy.context}</p></article>
-            <article><small>04 · BELGE OKUMASI</small><h3>Verdiğiniz dilin açtığı kapı</h3><p>{verseStudy.documentReading}</p></article>
+            <article><small>04 · MANA OKUMASI</small><h3>Özgün dilin açtığı kapı</h3><p>{verseStudy.documentReading}</p></article>
             <article className="hypothesis"><small>05 · SEMBOLİK HİPOTEZ</small><h3>Mana ihtimali</h3><p>{verseStudy.symbolicHypothesis}</p></article>
           </div>
           <div className="study-reflection"><span>◉</span><div><small>06 · TEFEKKÜR SORUSU</small><p>{verseStudy.reflection}</p></div></div>
-          <p className="method-note"><b>Yöntem ayrımı</b> · Lafız, kök ve bağlam dilsel katmandır; belge okuması ve sembolik hipotez kesin hüküm değil, açıkça etiketlenmiş tefekkür katmanıdır.</p>
+          <p className="method-note"><b>Yöntem ayrımı</b> · Lafız, kök ve bağlam dilsel katmandır; mana okuması ve sembolik hipotez kesin hüküm değil, açıkça etiketlenmiş tefekkür katmanıdır.</p>
         </section> : <>
         <div className="reader-heading">
           <div>
@@ -372,18 +395,18 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
             <small className="audio-source">Kaynak: Quran.Foundation açık ses CDN’i</small>
           </div>
         </article> : selected === 0 ? <article className="besmele-card glass">
-          <span className="eyebrow">YENİ BELGE HAFIZASI · BESMELE ÇEKİRDEĞİ</span>
-          <p className="besmele-arabic" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+          <span className="eyebrow">ÖZGÜN MANA HAFIZASI · BESMELE ÇEKİRDEĞİ</span>
+          <p className="besmele-arabic arabic-colored" lang="ar" dir="rtl">{["بِسْمِ", "اللَّهِ", "الرَّحْمَنِ", "الرَّحِيمِ"].map((word, index) => <span key={word} style={{ color: arabicWordColors[index] }}>{word}</span>)}</p>
           <p className="besmele-meaning">Rahmân ve Rahîm olan Allah’ın adıyla.</p>
           <div className="besmele-stats"><span><b>4</b> kelime</span><span><b>19</b> harf</span><span><b>5</b> ana kapı</span><span><b>7</b> sembolik kat</span></div>
           <div className="besmele-flow"><span><b>Bâ–Nokta</b>Başlatan tohum</span><i>→</i><span><b>İsim</b>Niyeti tanımla</span><i>→</i><span><b>Allah</b>Kalp çekirdeği</span><i>→</i><span><b>Rahmân</b>Kuşatan rahmet</span><i>→</i><span><b>Rahîm</b>Tohumu eyleme doğur</span></div>
-          <div className="besmele-note"><b>Belgeden çıkan ana mana</b><p>Besmele yalnız bir başlangıç cümlesi değil; zihin → kalp → eylem hattını hizalayan sembolik bir köprüdür. Üst akış “inâyet”, alt akış “niyet” olarak okunur; görevliler bağımsız varlıklar değil, Başlat · Tanımla · Birleştir · Kapsa · Doğur işlevleridir.</p></div>
+          <div className="besmele-note"><b>Ana mana çekirdeği</b><p>Besmele yalnız bir başlangıç cümlesi değil; zihin → kalp → eylem hattını hizalayan sembolik bir köprüdür. Üst akış “inâyet”, alt akış “niyet” olarak okunur; görevliler bağımsız varlıklar değil, Başlat · Tanımla · Birleştir · Kapsa · Doğur işlevleridir.</p></div>
         </article> : <div className="verse-and-coverage">
           <article className="quran-script-card glass">
             <div className="calligraphy-crown" aria-hidden="true"><i></i><span>۞</span><i></i></div>
             <span className="eyebrow">MUSHAF METNİ · OSMANÎ YAZIM</span>
             <div className="quran-verse-number"><span>{selectedSurah.name}</span><b>{currentVerse}</b></div>
-            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <p className="quran-arabic-calligraphy" lang="ar" dir="rtl">{quranVerse.text}</p> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
+            {quranVerse.key === `${selected}:${currentVerse}` && quranVerse.loading ? <p className="arabic-loading">Âyet hazırlanıyor…</p> : quranVerse.key === `${selected}:${currentVerse}` && quranVerse.text ? <p className="quran-arabic-calligraphy arabic-colored" lang="ar" dir="rtl">{quranVerse.text.split(/\s+/).map((word, index) => <span key={`${word}-${index}`} data-word={index + 1} style={{ color: arabicWordColors[index % arabicWordColors.length] }}>{word}</span>)}</p> : <p className="arabic-loading">{quranVerse.error || "Âyet metni hazırlanıyor…"}</p>}
             <div className="calligraphy-foot" aria-hidden="true">◇ ─── ✦ ─── ◇</div>
             <small className="quran-text-source">Arapça metin kaynağı: Al Quran Cloud · quran-uthmani</small>
           </article>
@@ -436,7 +459,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
           <p className="state-safety">Bu araç teşhis veya tedavi vermez. Düşük ruh hâli iki haftadan uzun sürüyor ya da günlük yaşamını etkiliyorsa bir ruh sağlığı uzmanıyla görüş.</p>
         </section>
         {!hasDeepAnalysis ? <section className="pending-analysis">
-          <span className="eyebrow">BELGEYE DAYALI İNCELEME</span><h3>Bu âyet için yorum gösterilmiyor</h3><p>Arapça metin korunur; açıklama yalnız Word belgelerinizden gerçekten işlenmiş, âyete özel içerik bulunduğunda açılır.</p><div><b>1</b> Arapça metin <i>→</i><b>2</b> Belge kaydı <i>→</i><b>3</b> Âyete özel içerik</div>
+          <span className="eyebrow">ÂYETE ÖZGÜ İNCELEME</span><h3>Bu âyet için yorum hazırlanıyor</h3><p>Arapça metin korunur; açıklama yalnız âyete özel lafız, kök, bağlam ve mana katmanları tamamlandığında açılır.</p><div><b>1</b> Arapça metin <i>→</i><b>2</b> Dil izi <i>→</i><b>3</b> Âyete özel mana</div>
         </section> : <>
         <div className="layer-tabs" role="tablist">
           {activeLayers.map((item) => <button key={item.id} role="tab" aria-selected={activeLayer === item.id} className={activeLayer === item.id ? "active" : ""} onClick={() => setActiveLayer(item.id)}>{item.label}</button>)}
@@ -449,7 +472,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
         </div>
         {activeLayer === "hakikat" && selected === 37 && currentVerse === 1 && <section className="mana-engine">
           <div className="mana-engine-head">
-            <div><span className="engine-pulse"></span><small>BELGE DNA’SI · MANA MOTORU</small><b>Kapıdan çekirdeğe derin iniş</b></div>
+            <div><span className="engine-pulse"></span><small>ÖZGÜN MANA MOTORU</small><b>Kapıdan çekirdeğe derin iniş</b></div>
             <span className="engine-state">ŞİMDİ-AN AÇIK</span>
           </div>
           <div className="mana-lenses" role="tablist" aria-label="Mana mercekleri">
@@ -473,6 +496,11 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
             {secretLayers.filter((item) => item.id === secretLayer).map((item) => <div className="secret-result" key={item.id}>
               <small>{item.tag}</small><h5>{item.title}</h5><p>{item.text}</p><code>{item.formula}</code>
               {item.id === "ebced" && <div className="number-matrix">{numberSystems.map((system) => <div key={system.name}><small>{system.name}</small><b>{system.value}</b><span>{system.note}</span></div>)}</div>}
+              {item.id === "dimensions" && <div className="dimension-engine">
+                <div className="dimension-nav" role="tablist" aria-label="1D ile 12D arası mana mercekleri">{dimensionLenses.map((dimension) => <button key={dimension.level} role="tab" aria-selected={dimensionLevel === dimension.level} className={dimensionLevel === dimension.level ? "active" : ""} onClick={() => setDimensionLevel(dimension.level)}>{dimension.level}</button>)}</div>
+                {dimensionLenses.filter((dimension) => dimension.level === dimensionLevel).map((dimension) => <article key={dimension.level}><small>{dimension.level} · {dimension.name}</small><h6>{dimension.question}</h6><p>{dimension.saffat}</p></article>)}
+                <p className="dimension-rule">Boyutlar bilimsel uzay boyutları veya vahyin kesin karşılığı olarak sunulmaz. Her mercek özgün Arapça lafza geri dönmek zorundadır; lafız ve bağlamla çatışan üretim elenir.</p>
+              </div>}
               {item.id === "keepers" && <div className="keeper-finder">
                 <div className="keeper-finder-head"><small>GÖREVLİ İZİ MOTORU</small><b>{selected === 0 ? "Besmele" : "Sâffât 37:1"} · işaretli rol haritası</b></div>
                 <div className="keeper-verse" dir="rtl">{(selected === 0 ? besmeleKeepers : saffatKeepers).map((keeper) => <mark key={keeper.word}>{keeper.word}</mark>)}</div>
@@ -482,7 +510,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
             </div>)}
           </div>
           <div className="engine-principles"><span>Kalp merkezli</span><span>Spiral okuma</span><span>Özgür irade</span><span>Sevgi dili</span></div>
-          <p className="engine-disclaimer">Belge dilinizden türetilen bu okuma, âyeti lafzî anlamın yerine geçmeden sembolik bir “mana kapısı” olarak açar. Frekans, enerji, çekirdek ve mühür kavramları burada manevi metaforlardır; kesin bilgi, dinî hüküm veya sağlık iddiası değildir.</p>
+          <p className="engine-disclaimer">Özgün mana diliyle kurulan bu okuma, âyeti lafzî anlamın yerine geçmeden sembolik bir “mana kapısı” olarak açar. Frekans, enerji, çekirdek, boyut ve mühür kavramları burada manevi metaforlardır; kesin bilgi, dinî hüküm veya sağlık iddiası değildir.</p>
         </section>}
         <div className="reflection glass">
           <div className="reflection-title"><span>◉</span><div><small>ŞİMDİ & BURADA</small><b>İç gözlem</b></div></div>
@@ -499,7 +527,7 @@ export default function Home({ locale = "tr" }: { locale?: Locale } = {}) {
       <div className="reading-tools glass" aria-label="Okuma görünümü araçları">
         <button onClick={() => setTextLevel((level) => Math.max(0, level - 1))} disabled={textLevel === 0} aria-label="Metni küçült">A−</button>
         <button onClick={() => setTextLevel((level) => Math.min(2, level + 1))} disabled={textLevel === 2} aria-label="Metni büyüt">A+</button>
-        <button className={clarityMode ? "active" : ""} onClick={() => setClarityMode(!clarityMode)} aria-pressed={clarityMode} aria-label="Net görünümü aç veya kapat">◉ <span>Net</span></button>
+        <button className={clarityMode ? "active" : ""} onClick={() => setClarityMode(!clarityMode)} aria-pressed={clarityMode} aria-label="Basit okuma ile akademik analiz arasında geçiş yap">◉ <span>{clarityMode ? "Basit" : "Akademik"}</span></button>
       </div>
 
       {navOpen && <button className="scrim" onClick={() => setNavOpen(false)} aria-label="Menüyü kapat" />}
