@@ -90,12 +90,16 @@ const worker = {
     const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))));
     const traceId = request.headers.get("x-trace-id")?.replace(/[^a-f0-9]/gi, "").slice(0, 32) || crypto.randomUUID().replaceAll("-", "");
     const traceparent = `00-${traceId.padEnd(32, "0")}-0000000000000001-01`;
+    const existingVariant = request.headers.get("Cookie")?.match(/(?:^|;\s*)aa_reader=(control|focus)/)?.[1];
+    const experimentVariant = existingVariant ?? (Number.parseInt(traceId.slice(0, 2), 16) % 2 ? "focus" : "control");
 
     const finalize = (response: Response) => {
       const output = new Response(response.body, response);
       const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;
       output.headers.set("X-Trace-Id", traceId);
       output.headers.set("Traceparent", traceparent);
+      output.headers.set("X-Experiment-Reader", experimentVariant);
+      if (!existingVariant) output.headers.append("Set-Cookie", `aa_reader=${experimentVariant}; Path=/; Max-Age=2592000; Secure; HttpOnly; SameSite=Lax`);
       output.headers.append("Server-Timing", `app;dur=${durationMs}`);
       console.log(JSON.stringify({ timestamp: new Date().toISOString(), level: response.status >= 500 ? "error" : response.status >= 400 ? "warn" : "info", event: "http.request", service: "ayet-atlasi", traceId, method: request.method, path: url.pathname, status: response.status, durationMs, colo: request.cf?.colo ?? "local" }));
       return output;
@@ -155,6 +159,7 @@ const worker = {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-trace-id", traceId);
     requestHeaders.set("traceparent", traceparent);
+    requestHeaders.set("x-experiment-reader", experimentVariant);
     const routedRequest = url.pathname === "/" && url.searchParams.get("format") === "md"
       ? new Request(new URL("/page.md", request.url), { method: request.method, headers: requestHeaders, body: request.body })
       : new Request(request, { headers: requestHeaders });
